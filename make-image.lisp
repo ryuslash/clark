@@ -11,6 +11,6 @@
  "clark" :toplevel
  (lambda ()
    (sb-posix:putenv (format nil "SBCL_HOME=~A" #.(sb-ext:posix-getenv "SBCL_HOME")))
-   (org.ryuslash.clark:clark)
+   (org.ryuslash.clark:clark sb-ext:*posix-argv*)
    0)
  :executable t)
