@@ -38,7 +38,8 @@ BM should be a list containing the url and name of the bookmark."
 
 (defun make-command-name (base)
   "Turn BASE into the name of a possible command."
-  (concatenate 'string (string-upcase base) "-COMMAND"))
+  (intern (concatenate 'string (string-upcase base) "-COMMAND")
+          :org.ryuslash.clark))
 
 (defun help-command (args)
   "Show a help message."
@@ -58,8 +59,7 @@ BM should be a list containing the url and name of the bookmark."
 (defun clark (args)
   (check-db "test2.db")
   (if (> (length args) 1)
-      (let* ((cmd-name (make-command-name (cadr args)))
-             (sym (intern cmd-name :org.ryuslash.clark)))
-        (when (fboundp sym) (funcall sym (cdr args))))
+      (let* ((cmd-name (make-command-name (cadr args))))
+        (when (fboundp cmd-name) (funcall cmd-name (cdr args))))
       (map nil #'print-bookmark (get-bookmarks)))
   (disconnect *db*))
