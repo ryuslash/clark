@@ -29,18 +29,6 @@ The result contains the url and the name of the bookmark."
                      (statement-column-value statement 1))
        finally (finalize-statement statement))))
 
-(defun print-bookmark (bm)
-  "Print information about bookmark BM.
-
-BM should be a list containing the url and name of the bookmark."
-  (destructuring-bind (url name) bm
-    (format t "~A~%~A~%~%" url name)))
-
-(defun make-command-name (base)
-  "Turn BASE into the name of a possible command."
-  (intern (concatenate 'string (string-upcase base) "-COMMAND")
-          :org.ryuslash.clark))
-
 (defun help-command (args)
   "Show a help message."
   (format t (concatenate
@@ -52,11 +40,27 @@ BM should be a list containing the url and name of the bookmark."
              "help     Display this help and exit~%"
              "version  Output version information and exit~%")))
 
+(defun make-command-name (base)
+  "Turn BASE into the name of a possible command."
+  (intern (concatenate 'string (string-upcase base) "-COMMAND")
+          :org.ryuslash.clark))
+
+(defun print-bookmark (bm)
+  "Print information about bookmark BM.
+
+BM should be a list containing the url and name of the bookmark."
+  (destructuring-bind (url name) bm
+    (format t "~A~%~A~%~%" url name)))
+
 (defun version-command (args)
   "Display clark's version number."
   (format t "clark version ~A~%" *version*))
 
 (defun clark (args)
+  "Main function.
+
+Connect to the database, parse command-line arguments, execute and
+then disconnect."
   (check-db "test2.db")
   (if (> (length args) 1)
       (let* ((cmd-name (make-command-name (cadr args))))
