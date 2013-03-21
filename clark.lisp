@@ -59,6 +59,7 @@ The result contains the url and the name of the bookmark."
 
 (defun help-command (args)
   "Show a help message."
+  (declare (ignore args))
   (format t (concatenate
              'string
              "Usage: clark [<command> [<options> ...]]~%"
@@ -68,6 +69,7 @@ The result contains the url and the name of the bookmark."
              "~%"))
   (map nil (lambda (hlp)
              (destructuring-bind (name short long) hlp
+               (declare (ignore long))
                (format t "  ~7A  ~A~%" name short))) *helps*))
 
 (defun insert-bookmark (url name description)
@@ -110,6 +112,7 @@ BM should be a list containing the url and name of the bookmark."
 
 (defun version-command (args)
   "Display clark's version number."
+  (declare (ignore args))
   (format t "clark version ~A~%" *version*))
 
 (defun clark (args)
