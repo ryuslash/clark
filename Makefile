@@ -1,2 +1,2 @@
 clark: clark.lisp make-image.lisp
-	sbcl --load make-image.lisp
+	sbcl --disable-debugger --load make-image.lisp
