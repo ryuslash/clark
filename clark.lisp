@@ -64,7 +64,7 @@ The result contains the url and the name of the bookmark."
 (defun insert-bookmark (url name description)
   "Insert URL, NAME and DESCRIPTION into the bookmark table."
   (execute-non-query *db* "INSERT INTO bookmark VALUES (?, ?, ?, ?)"
-                     url name (get-universal-time) description))
+                     url (get-universal-time) name description))
 
 (defun insert-bookmark-tag (bookmark-id tag-id)
   "Insert BOOKMARK-ID and TAG-ID into the bookmark_tag table."
