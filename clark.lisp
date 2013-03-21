@@ -45,6 +45,17 @@ The result contains the url and the name of the bookmark."
   (intern (concatenate 'string (string-upcase base) "-COMMAND")
           :org.ryuslash.clark))
 
+(defun parse-args (args)
+  "Parse command-line arguments ARGS.
+
+The executable name should already have been removed."
+  (let ((cmd-name (make-command-name (car args))))
+    (if (fboundp cmd-name)
+        (funcall cmd-name (cdr args))
+        (progn
+          (format t "Unknown command: ~A~%" (car args))
+          (help-command nil)))))
+
 (defun print-bookmark (bm)
   "Print information about bookmark BM.
 
@@ -63,7 +74,6 @@ Connect to the database, parse command-line arguments, execute and
 then disconnect."
   (check-db "test2.db")
   (if (> (length args) 1)
-      (let* ((cmd-name (make-command-name (cadr args))))
-        (when (fboundp cmd-name) (funcall cmd-name (cdr args))))
+      (parse-args (cdr args))
       (map nil #'print-bookmark (get-bookmarks)))
   (disconnect *db*))
