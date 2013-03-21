@@ -5,6 +5,15 @@
 (defvar *db* nil
   "The database connection.")
 
+(defconstant *helps*
+  '(("add" "Add a bookmark to the database"
+     "add <url> <name> <description> [<tags> ...]")
+    ("help" "Display this help and exit"
+     "help")
+    ("version" "Output version information and exit"
+     "version"))
+  "Help texts for commands.")
+
 (defconstant *version* "0.1.0"
   "Clark's version.")
 
@@ -56,10 +65,10 @@ The result contains the url and the name of the bookmark."
              "       clark add <url> <name> <description> [<tags> ...]~%"
              "~%"
              "Possible commands:~%"
-             "~%"
-             "add      Add a bookmark to the database~%"
-             "help     Display this help and exit~%"
-             "version  Output version information and exit~%")))
+             "~%"))
+  (map nil (lambda (hlp)
+             (destructuring-bind (name short long) hlp
+               (format t "  ~7A  ~A~%" name short))) *helps*))
 
 (defun insert-bookmark (url name description)
   "Insert URL, NAME and DESCRIPTION into the bookmark table."
