@@ -52,7 +52,8 @@ The result contains the url and the name of the bookmark."
   "Show a help message."
   (format t (concatenate
              'string
-             "Usage: clark [command [options]...]~%"
+             "Usage: clark [<command> [<options> ...]]~%"
+             "       clark add <url> <name> <description> [<tags> ...]~%"
              "~%"
              "Possible commands:~%"
              "~%"
