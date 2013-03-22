@@ -11,7 +11,9 @@
     ("help" "Display this help and exit"
      "help")
     ("version" "Output version information and exit"
-     "version"))
+     "version")
+    ("search" "Search for a name or tag"
+     "search <query>"))
   "Help texts for commands.")
 
 (defconstant *version* "0.1.0"
@@ -109,6 +111,23 @@ The executable name should already have been removed."
 BM should be a list containing the url and name of the bookmark."
   (destructuring-bind (url name) bm
     (format t "~A~%~A~%~%" url name)))
+
+(defun search-command (args)
+  "Search the database for a match."
+  (map
+   nil (lambda (bm)
+         (destructuring-bind (url name description) bm
+           (format t "~A~%  ~A~%  ~A~%~%" url name description)))
+   (execute-to-list
+    *db* (concatenate 'string
+                      "SELECT url, name, description "
+                      "FROM bookmark "
+                      "WHERE name LIKE ? "
+                      "OR ? IN (SELECT name "
+                      "FROM tag "
+                      "JOIN bookmark_tag ON (tag_id = tag.rowid) "
+                      "WHERE bookmark_id = bookmark.rowid)")
+    (format nil "%~A%" (car args)) (car args))))
 
 (defun version-command (args)
   "Display clark's version number."
