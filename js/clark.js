@@ -1,5 +1,4 @@
-/* clark -- Store/retrieve/manage bookmarks
-   Copyright (C) 2012,2013  Tom Willemsen <tom at ryuslash dot org>
+/* Copyright (C) 2013  Tom Willemsen <tom at ryuslash dot org>
 
    This file is part of CLark
 

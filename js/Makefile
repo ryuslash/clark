@@ -1,4 +1,4 @@
-# Copyright (C) 2012, 2013 Tom Willemsen
+# Copyright (C) 2013 Tom Willemsen <tom at ryuslash dot org>
 #
 #   This file is part of CLark
 #
@@ -14,6 +14,7 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with CLark. If not, see <http://www.gnu.org/licenses/>.
+
 DESTDIR ?= /usr/local
 
 .PHONY: all install uninstall
