@@ -1,0 +1,46 @@
+#+TITLE: CLark
+
+* Name
+
+  clark - collect bookmarks on your command-line
+
+* Synopsis
+
+  =clark= <command> [<args> ...]
+
+* Description
+
+  CLark is a bookmark collection application for the command-line. It
+  is a drag being dependant on your browser or an internet connection
+  to be able to collect, manage and look through your bookmarks, so
+  we're breaking free... slowly.
+
+** CLark?! What the ...?
+
+   I've been working on this program for a long time, though not very
+   intensely, and it's gone through a few names.
+
+   At first I absolutely wanted to write it in C, and I named it
+   =linkwave=. I made a little program that could store given URLs with
+   names and descriptions, but not much else than that.
+
+   Then I started messing around with Lisp and some of its
+   derivatives, such as chicken scheme. And then I thought it would be
+   much cooler to (re)write this in scheme! I named it =markam=, because
+   Markam collects books.
+
+   Now, I'm thinking that it would be much cooler _still_ to write the
+   thing in Common Lisp! So I name it CLark, because it is Common
+   Lisp, and a rewrite of mARKam.
+
+* Commands
+
+  - =help= :: Prints a usage and help message, showing a list of
+            possible commands and some hints on how to use them.
+
+  - =version= :: Prints the CLark version and then quits.
+
+  - =add= :: Add a new bookmark to the database.
+
+  - =search= :: Search through the database looking for a partial match
+              on its name or an exact-matching tag.
