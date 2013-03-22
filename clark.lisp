@@ -5,26 +5,28 @@
 (defvar *db* nil
   "The database connection.")
 
-(defconstant *helps*
-  '(("add" "Add a bookmark to the database"
-     "add <url> <name> <description> [<tags> ...]")
-    ("help" "Display this help and exit"
-     "help")
-    ("version" "Output version information and exit"
-     "version")
-    ("search" "Search for a name or tag"
-     "search <query>"))
+(defvar *help-messages* nil
   "Help texts for commands.")
+
+(defvar *max-command-name-length* 0
+  "Lenght of the longest command name.")
+
+(defmacro defcommand (name doc &body body)
+  "Define a new command usable on the command-line."
+  (let* ((sname (symbol-name name))
+         (command-name (make-command-name sname)))
+    `(progn
+       (defun ,command-name (args)
+         ,doc
+         ,@body)
+       (setf *help-messages*
+             (nconc *help-messages*
+                    '((,(string-downcase sname) ,doc "")))
+             *max-command-name-length*
+             (max *max-command-name-length* (length ,sname))))))
 
 (defconstant *version* "0.1.0"
   "Clark's version.")
-
-(defun add-command (args)
-  "Add a new bookmark to the database."
-  (with-transaction *db*
-    (destructuring-bind (url name description &rest tags) args
-      (insert-bookmark url name description)
-      (add-tags tags))))
 
 (defun add-tags (tags)
   "Add tags to the bookmark_tag table and possibly to tag."
@@ -59,21 +61,6 @@ The result contains the url and the name of the bookmark."
   "Get the rowid of tag NAME."
   (execute-single *db* "SELECT rowid FROM tag WHERE name = ?" name))
 
-(defun help-command (args)
-  "Show a help message."
-  (declare (ignore args))
-  (format t (concatenate
-             'string
-             "Usage: clark [<command> [<options> ...]]~%"
-             "       clark add <url> <name> <description> [<tags> ...]~%"
-             "~%"
-             "Possible commands:~%"
-             "~%"))
-  (map nil (lambda (hlp)
-             (destructuring-bind (name short long) hlp
-               (declare (ignore long))
-               (format t "  ~7A  ~A~%" name short))) *helps*))
-
 (defun insert-bookmark (url name description)
   "Insert URL, NAME and DESCRIPTION into the bookmark table."
   (execute-non-query *db* "INSERT INTO bookmark VALUES (?, ?, ?, ?)"
@@ -89,10 +76,11 @@ The result contains the url and the name of the bookmark."
     (execute-non-query *db* "INSERT INTO tag VALUES (?)" name)
     (last-insert-rowid *db*))
 
-(defun make-command-name (base)
-  "Turn BASE into the name of a possible command."
-  (intern (concatenate 'string (string-upcase base) "-COMMAND")
-          :org.ryuslash.clark))
+(eval-when (:compile-toplevel :load-toplevel)
+  (defun make-command-name (base)
+    "Turn BASE into the name of a possible command."
+    (intern (concatenate 'string (string-upcase base) "-COMMAND")
+            :org.ryuslash.clark)))
 
 (defun parse-args (args)
   "Parse command-line arguments ARGS.
@@ -112,8 +100,31 @@ BM should be a list containing the url and name of the bookmark."
   (destructuring-bind (url name) bm
     (format t "~A~%~A~%~%" url name)))
 
-(defun search-command (args)
-  "Search the database for a match."
+(defcommand add
+  "Add a new bookmark."
+  (with-transaction *db*
+    (destructuring-bind (url name description &rest tags) args
+      (insert-bookmark url name description)
+      (add-tags tags))))
+
+(defcommand help
+  "Show help message."
+  (declare (ignore args))
+  (format t (concatenate
+             'string
+             "Usage: clark [<command> [<options> ...]]~%"
+             "       clark add <url> <name> <description> [<tags> ...]~%"
+             "~%"
+             "Possible commands:~%"
+             "~%"))
+  (map nil (lambda (hlp)
+             (destructuring-bind (name short long) hlp
+               (declare (ignore long))
+               (format t "  ~vA  ~A~%" *max-command-name-length*
+                       name short))) *help-messages*))
+
+(defcommand search
+  "Search through bookmarks."
   (map
    nil (lambda (bm)
          (destructuring-bind (url name description) bm
@@ -129,8 +140,8 @@ BM should be a list containing the url and name of the bookmark."
                       "WHERE bookmark_id = bookmark.rowid)")
     (format nil "%~A%" (car args)) (car args))))
 
-(defun version-command (args)
-  "Display clark's version number."
+(defcommand version
+  "Show version."
   (declare (ignore args))
   (format t "clark version ~A~%" *version*))
 
