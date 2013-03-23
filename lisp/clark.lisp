@@ -71,14 +71,8 @@
 (defun get-bookmarks ()
   "Get a list of all bookmarks.
 
-The result contains the url and the name of the bookmark."
-  (let ((statement
-         (prepare-statement *db* "select url, name from bookmark")))
-    (loop
-       while (step-statement statement)
-       collect (list (statement-column-value statement 0)
-                     (statement-column-value statement 1))
-       finally (finalize-statement statement))))
+The result contains the url, name and the description of the bookmark."
+  (execute-to-list *db* "select url, name, description from bookmark"))
 
 (defun get-db-location ()
   "Get the location of the database."
