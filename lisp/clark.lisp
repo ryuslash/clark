@@ -30,6 +30,10 @@
 (defvar *max-command-name-length* 0
   "Lenght of the longest command name.")
 
+(defmacro call-command (name &rest args)
+  (let ((command-name (make-command-name (symbol-name name))))
+    `(,command-name ,@args)))
+
 (defmacro defcommand (name sdoc ldoc &body body)
   "Define a new command usable on the command-line."
   (let* ((sname (symbol-name name))
@@ -140,7 +144,7 @@ The executable name should already have been removed."
         (funcall cmd-name (cdr args))
         (progn
           (format t "Unknown command: ~A~%" (car args))
-          (help-command nil)))))
+          (call-command help nil)))))
 
 (defun print-bookmark (bm)
   "Print information about bookmark BM.
@@ -187,7 +191,7 @@ otherwise."
           ((null ldoc) (format t "Unkown command: ~A~%" (car args)))
           ((and (symbolp ldoc) (fboundp ldoc)) (funcall ldoc))
           (t (format t "~A~%" ldoc))))
-      (help-command '("help"))))
+      (call-command help '("help"))))
 
 (defcommand search
     "Search through bookmarks."
