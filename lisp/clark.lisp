@@ -66,13 +66,23 @@
 (defconstant *version* "0.1.0"
   "Clark's version.")
 
-(defun add-tags (tags)
+(defun add-tags (url-or-id tags)
   "Add tags to the bookmark_tag table and possibly to tag."
-  (let ((bookmark-id (last-insert-rowid *db*)))
-    (map nil (lambda (tag)
-               (let ((tag-id (handler-case (insert-tag tag)
-                               (sqlite-error () (get-tag-id tag)))))
-                 (insert-bookmark-tag bookmark-id tag-id))) tags)))
+  (when url-or-id
+    (if (integerp url-or-id)
+        (map nil (lambda (tag)
+                   (let ((tag-id (handler-case (insert-tag tag)
+                                   (sqlite-error () (get-tag-id tag)))))
+                     (insert-bookmark-tag url-or-id tag-id))) tags)
+        (add-tags (get-bookmark-id url-or-id) tags))))
+
+(defun clear-tags (url-or-id)
+  "Remove all tags from the bookmark URL."
+  (when url-or-id
+    (if (integerp url-or-id)
+        (execute-non-query
+         *db* "DELETE FROM bookmark_tag WHERE bookmark_id = ?" url-or-id)
+        (clear-tags (get-bookmark-id url-or-id)))))
 
 (defun ensure-db-exists (name)
   "Connect to the database, possibly creating it."
@@ -88,6 +98,10 @@
 
 The result contains the url, name and the description of the bookmark."
   (execute-to-list *db* "select url, name, description from bookmark"))
+
+(defun get-bookmark-id (url)
+  "Get the id of the bookmark for URL."
+  (execute-single *db* "SELECT rowid FROM bookmark WHERE url = ?" url))
 
 (defun get-db-location ()
   "Get the location of the database."
@@ -180,7 +194,7 @@ omitted or any number of tag names."
   (with-transaction *db*
     (destructuring-bind (url name description &rest tags) args
       (insert-bookmark url name description)
-      (add-tags tags))))
+      (add-tags (last-insert-rowid *db*) tags))))
 
 (defcommand edit (:min-args 3)
     "Edit a bookmark."
@@ -245,6 +259,15 @@ bookmark's name or an exact match for a tag."
                           "JOIN bookmark_tag ON (tag_id = tag.rowid) "
                           "WHERE bookmark_id = bookmark.rowid)")
         (format nil "%~A%" (car args)) (car args))))
+
+(defcommand set-tags (:min-args 1)
+    "Set a bookmark's tags."
+    "Usage: clark set-tags <url> [<tags> ...]
+
+Set bookmark URL's tags to the given list, overwriting the previous
+list of tags."
+  (clear-tags (car args))
+  (add-tags (car args) (cdr args)))
 
 (defcommand version (:max-args 0)
     "Show version."
