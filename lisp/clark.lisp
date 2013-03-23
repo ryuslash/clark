@@ -35,7 +35,7 @@
 
 (defmacro call-command (name &rest args)
   (let ((command-name (make-command-name (symbol-name name))))
-    `(,command-name ,@args)))
+    `(,command-name ',args)))
 
 (defmacro defcommand (name (&key (min-args 0) (max-args nil)) sdoc ldoc
                       &body body)
@@ -52,11 +52,11 @@
              ((< num-args min-args)
               (format t "Too few arguments, need at least ~D, got ~D~%"
                       min-args num-args)
-              (call-command help '(,sname)))
+              (call-command help ,sname))
              ((and max-args (> num-args max-args))
               (format t "Too many arguments, need at most ~D, got ~D~%"
                       max-args num-args)
-              (call-command help '(,sname)))
+              (call-command help ,sname))
              (t ,@body))))
        (setf *help-messages*
              (nconc *help-messages* '((,sname ,sdoc ,ldoc)))
@@ -172,7 +172,7 @@ The executable name should already have been removed."
             (funcall cmd-name (cdr args))
             (progn
               (format t "Unknown command: ~A~%" (car args))
-              (call-command help nil))))
+              (call-command help))))
       (map nil #'print-bookmark (get-bookmarks))))
 
 (defun print-bookmark (bm)
@@ -240,7 +240,7 @@ otherwise."
           ((null ldoc) (format t "Unkown command: ~A~%" (car args)))
           ((and (symbolp ldoc) (fboundp ldoc)) (funcall ldoc))
           (t (format t "~A~%" ldoc))))
-      (call-command help '("help"))))
+      (call-command help "help")))
 
 (defcommand remove (:min-args 1 :max-args 1)
     "Remove a bookmark from the database."
