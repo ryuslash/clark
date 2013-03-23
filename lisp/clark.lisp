@@ -28,7 +28,7 @@
   "Help texts for commands.")
 
 (defvar *max-command-name-length* 0
-  "Lenght of the longest command name.")
+  "Length of the longest command name.")
 
 (defmacro call-command (name &rest args)
   (let ((command-name (make-command-name (symbol-name name))))
