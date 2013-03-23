@@ -134,14 +134,25 @@ BM should be a list containing the url and name of the bookmark."
     (format t "~A~%~A~%~%" url name)))
 
 (defcommand add
-  "Add a new bookmark."
+    "Add a new bookmark."
   (with-transaction *db*
     (destructuring-bind (url name description &rest tags) args
       (insert-bookmark url name description)
       (add-tags tags))))
 
+(defcommand exists
+    "Check if a bookmark exists in the database."
+  (if (execute-single *db* "SELECT rowid FROM bookmark WHERE url = ?"
+                      (car args))
+      (progn
+        (format t "yes~%")
+        0)
+      (progn
+        (format t "no~%")
+        1)))
+
 (defcommand help
-  "Show help message."
+    "Show help message."
   (declare (ignore args))
   (format t (concatenate
              'string
@@ -157,7 +168,7 @@ BM should be a list containing the url and name of the bookmark."
                        name short))) *help-messages*))
 
 (defcommand search
-  "Search through bookmarks."
+    "Search through bookmarks."
   (map
    nil (lambda (bm)
          (destructuring-bind (url name description) bm
@@ -174,7 +185,7 @@ BM should be a list containing the url and name of the bookmark."
     (format nil "%~A%" (car args)) (car args))))
 
 (defcommand version
-  "Show version."
+    "Show version."
   (declare (ignore args))
   (format t "clark version ~A~%" *version*))
 
