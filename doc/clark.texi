@@ -1,0 +1,142 @@
+\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@setfilename clark.info
+@settitle CLark User Manual
+@c %**end of header
+@copying
+The user manual for CLark.
+
+Copyright @copyright{} 2013  Tom Willemsen
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+A copy of the license is included in the section entitled ``GNU
+Free Documentation License''.
+
+A copy of the license is also available from the Free Software
+Foundation Web site at @url{http://www.gnu.org/licenses/fdl.html}.
+
+@end quotation
+
+The document was typeset with
+@uref{http://www.texinfo.org/, GNU Texinfo}.
+
+@end copying
+
+@titlepage
+@title CLark User Manual
+@subtitle The user manual for CLark
+@author Tom Willemsen
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@dircategory Individual utilities
+@direntry
+* CLark: (clark).     Keeps bookmarks.
+@end direntry
+
+@c Output the table of the contents at the beginning.
+@contents
+
+@ifnottex
+@node Top, Usage, (dir), (dir)
+@top CLark User Manual
+
+@insertcopying
+@end ifnottex
+
+@c Generate the nodes for this menu with `C-c C-u C-m'.
+@menu
+* Usage::                       How to use CLark
+* Copying This Manual::
+* Index::
+@end menu
+
+@c Update all node entries with `C-c C-u C-n'.
+@c Insert new nodes with `C-c C-c n'.
+@node Usage, Copying This Manual, Top, Top
+@chapter How to use
+
+For the moment CLark is a simple program, it has 3 functions.
+
+@menu
+* List::                        List all
+* Search::                      Search
+* Add::                         Add/Store/Save
+@end menu
+
+@node List, Search, Usage, Usage
+@section List all
+
+In order to view a list of all your bookmarks you can use:
+
+@example
+clark
+@end example
+
+@noindent
+This will show the list of all stored bookmarks, showing the URL, name
+and description.  This list is unsorted and unpaged.
+
+@node Search, Add, List, Usage
+@section Search
+
+You can also search through your stored bookmarks by using the
+@code{search} command:
+
+@deffn Command search STRING
+Search through the database for any bookmarks that either have
+@var{string} as a tag or have @var{string} somewhere in its title.
+@end deffn
+
+@noindent
+To perform a search for any bookmarks that have ``clark'' as a tag
+and also any that have ``clark'' anywhere in their title you should
+use:
+
+@example
+clark search clark
+@end example
+
+@node Add,  , Search, Usage
+@section Add/Store/Save
+
+The last function is to add a new bookmark, which can be done with:
+
+@example
+clark add http://example.org Example \
+          "Some description about Example" \
+          example some more tags
+@end example
+
+@noindent
+This will store the bookmark with the URL of ``http://example.org'',
+name ``Example'', description ``Some description about Example'' and
+the tags ``example'', ``some'', ``more'' and ``tags''.  Any arguments
+following the description will be considered tags.
+
+@node Copying This Manual, Index, Usage, Top
+@appendix Copying This Manual
+
+@menu
+* GNU Free Documentation License::  License for copying this manual.
+@end menu
+
+@c Get fdl.texi from http://www.gnu.org/licenses/fdl.html
+@node GNU Free Documentation License,  , Copying This Manual, Copying This Manual
+@appendixsec
+@include fdl.texi
+
+@node Index,  , Copying This Manual, Top
+@unnumbered Index
+
+@printindex cp
+
+@bye
+
+@c clark.texi ends here
