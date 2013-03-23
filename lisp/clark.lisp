@@ -30,6 +30,9 @@
 (defvar *max-command-name-length* 0
   "Length of the longest command name.")
 
+(defvar *script* nil
+  "Whether or not to output in a machine-readable format.")
+
 (defmacro call-command (name &rest args)
   (let ((command-name (make-command-name (symbol-name name))))
     `(,command-name ,@args)))
@@ -133,19 +136,28 @@ The result contains the url, name and the description of the bookmark."
   "Parse command-line arguments ARGS.
 
 The executable name should already have been removed."
-  (let ((cmd-name (make-command-name (car args))))
-    (if (fboundp cmd-name)
-        (funcall cmd-name (cdr args))
-        (progn
-          (format t "Unknown command: ~A~%" (car args))
-          (call-command help nil)))))
+  (loop while (and args (char= (char (car args) 0) #\-))
+     do (case (intern (string-upcase (string-left-trim "-" (car args)))
+                      :org.ryuslash.clark)
+          (script (setf *script* t args (cdr args)))))
+  (if args
+      (let ((cmd-name (make-command-name (car args))))
+        (if (fboundp cmd-name)
+            (funcall cmd-name (cdr args))
+            (progn
+              (format t "Unknown command: ~A~%" (car args))
+              (call-command help nil))))
+      (map nil #'print-bookmark (get-bookmarks))))
 
 (defun print-bookmark (bm)
   "Print information about bookmark BM.
 
-BM should be a list containing the url and name of the bookmark."
-  (destructuring-bind (url name) bm
-    (format t "~A~%~A~%~%" url name)))
+BM should be a list containing the url, name and description of the
+bookmark."
+  (destructuring-bind (url name description) bm
+    (if *script*
+        (format t "~A~A~A" name description url)
+        (format t "~A~%  ~A~%  ~A~%~%" url name description))))
 
 (defcommand add
     "Add a new bookmark."
@@ -188,20 +200,17 @@ otherwise."
 
 Search the database for STR. Matches are made for substrings of a
 bookmark's name or an exact match for a tag."
-  (map
-   nil (lambda (bm)
-         (destructuring-bind (url name description) bm
-           (format t "~A~%  ~A~%  ~A~%~%" url name description)))
-   (execute-to-list
-    *db* (concatenate 'string
-                      "SELECT url, name, description "
-                      "FROM bookmark "
-                      "WHERE name LIKE ? "
-                      "OR ? IN (SELECT name "
-                      "FROM tag "
-                      "JOIN bookmark_tag ON (tag_id = tag.rowid) "
-                      "WHERE bookmark_id = bookmark.rowid)")
-    (format nil "%~A%" (car args)) (car args))))
+  (map nil #'print-bookmark
+       (execute-to-list
+        *db* (concatenate 'string
+                          "SELECT url, name, description "
+                          "FROM bookmark "
+                          "WHERE name LIKE ? "
+                          "OR ? IN (SELECT name "
+                          "FROM tag "
+                          "JOIN bookmark_tag ON (tag_id = tag.rowid) "
+                          "WHERE bookmark_id = bookmark.rowid)")
+        (format nil "%~A%" (car args)) (car args))))
 
 (defcommand version
     "Show version."
@@ -217,7 +226,5 @@ Print the version number and exit."
 Connect to the database, parse command-line arguments, execute and
 then disconnect."
   (load-db)
-  (if (> (length args) 1)
-      (parse-args (cdr args))
-      (map nil #'print-bookmark (get-bookmarks)))
+  (parse-args (cdr args))
   (disconnect *db*))
