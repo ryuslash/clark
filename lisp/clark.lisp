@@ -37,17 +37,29 @@
   (let ((command-name (make-command-name (symbol-name name))))
     `(,command-name ,@args)))
 
-(defmacro defcommand (name sdoc ldoc &body body)
+(defmacro defcommand (name (&key (min-args 0) (max-args nil)) sdoc ldoc
+                      &body body)
   "Define a new command usable on the command-line."
-  (let* ((sname (symbol-name name))
-         (command-name (make-command-name sname)))
+  (let* ((sname (string-downcase (symbol-name name)))
+         (command-name (make-command-name (symbol-name name))))
     `(progn
        (defun ,command-name (args)
          ,sdoc
-         ,@body)
+         (let ((min-args ,min-args)
+               (max-args ,max-args)
+               (num-args (length args)))
+           (cond
+             ((< num-args min-args)
+              (format t "Too few arguments, need at least ~D, got ~D~%"
+                      min-args num-args)
+              (call-command help '(,sname)))
+             ((and max-args (> num-args max-args))
+              (format t "Too many arguments, need at most ~D, got ~D~%"
+                      max-args num-args)
+              (call-command help '(,sname)))
+             (t ,@body))))
        (setf *help-messages*
-             (nconc *help-messages*
-                    '((,(string-downcase sname) ,sdoc ,ldoc)))
+             (nconc *help-messages* '((,sname ,sdoc ,ldoc)))
              *max-command-name-length*
              (max *max-command-name-length* (length ,sname))))))
 
@@ -159,7 +171,7 @@ bookmark."
         (format t "~A~A~A" name description url)
         (format t "~A~%  ~A~%  ~A~%~%" url name description))))
 
-(defcommand add
+(defcommand add (:min-args 3)
     "Add a new bookmark."
     "Usage: clark add <url> <name> <description> [<tags> ...]
 
@@ -170,7 +182,7 @@ omitted or any number of tag names."
       (insert-bookmark url name description)
       (add-tags tags))))
 
-(defcommand exists
+(defcommand exists (:min-args 1 :max-args 1)
     "Check if a bookmark exists in the database."
     "Usage: clark exists <url>
 
@@ -180,7 +192,7 @@ otherwise."
           (execute-single
            *db* "SELECT rowid FROM bookmark WHERE url = ?" (car args))))
 
-(defcommand help
+(defcommand help (:max-args 1)
     "Show help message."
     help-message
   (if (> (length args) 0)
@@ -194,7 +206,7 @@ otherwise."
           (t (format t "~A~%" ldoc))))
       (call-command help '("help"))))
 
-(defcommand search
+(defcommand search (:min-args 1 :max-args 1)
     "Search through bookmarks."
     "Usage: clark search <str>
 
@@ -212,12 +224,11 @@ bookmark's name or an exact match for a tag."
                           "WHERE bookmark_id = bookmark.rowid)")
         (format nil "%~A%" (car args)) (car args))))
 
-(defcommand version
+(defcommand version (:max-args 0)
     "Show version."
     "Usage: clark version
 
 Print the version number and exit."
-  (declare (ignore args))
   (format t "clark version ~A~%" *version*))
 
 (defun clark (args)
