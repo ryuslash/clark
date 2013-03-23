@@ -55,6 +55,21 @@ The document was typeset with
 * Usage::                       How to use CLark
 * Copying This Manual::
 * Index::
+
+@detailmenu
+ --- The Detailed Node Listing ---
+
+How to use
+
+* Querying::                    Getting bookmarks from the database.
+* Management::                  Maintaining bookmarks in the database.
+* Miscellaneous::               Other things that can be done.
+
+Copying This Manual
+
+* GNU Free Documentation License::  License for copying this manual.
+
+@end detailmenu
 @end menu
 
 @c Update all node entries with `C-c C-u C-n'.
@@ -62,16 +77,16 @@ The document was typeset with
 @node Usage, Copying This Manual, Top, Top
 @chapter How to use
 
-For the moment CLark is a simple program, it has 3 functions.
+For the moment CLark is a simple program, it has only a few functions.
 
 @menu
-* List::                        List all
-* Search::                      Search
-* Add::                         Add/Store/Save
+* Querying::                    Getting bookmarks from the database.
+* Management::                  Maintaining bookmarks in the database.
+* Miscellaneous::               Other things that can be done.
 @end menu
 
-@node List, Search, Usage, Usage
-@section List all
+@node Querying, Management, Usage, Usage
+@section Getting bookmarks from the database.
 
 In order to view a list of all your bookmarks you can use:
 
@@ -81,44 +96,85 @@ clark
 
 @noindent
 This will show the list of all stored bookmarks, showing the URL, name
-and description.  This list is unsorted and unpaged.
+and description. This list is unsorted and unpaged. There are also a
+few other things we can ask CLark to do:
 
-@node Search, Add, List, Usage
-@section Search
-
-You can also search through your stored bookmarks by using the
-@code{search} command:
-
-@deffn Command search STRING
-Search through the database for any bookmarks that either have
-@var{string} as a tag or have @var{string} somewhere in its title.
+@deffn Command exists URL
+Check the database to see if @var{url} can be found. Outputs
+@samp{yes} if @var{url} was found in the database, or @samp{no} when
+it was not.
 @end deffn
 
-@noindent
-To perform a search for any bookmarks that have ``clark'' as a tag
-and also any that have ``clark'' anywhere in their title you should
-use:
+@deffn Command search STR
+Look through the database for any bookmarks that have @var{str}
+anywhere in their name, or have a tag @var{str}. Outputs the same list
+as when no commands are given, but filtered by either of these
+conditions.
+@end deffn
 
-@example
-clark search clark
-@end example
+@node Management, Miscellaneous, Querying, Usage
+@section Maintaining bookmarks in the database.
 
-@node Add,  , Search, Usage
-@section Add/Store/Save
+CLark has a few commands that may be used to manage bookmarks in the
+database.
 
-The last function is to add a new bookmark, which can be done with:
+@deffn Command add URL NAME DESCRIPTION [TAGS...]
+Adds @var{url} to the database with @var{name} and @var{description}.
+Also adds references between @var{url} and any @var{tags} that were
+specified. If @var{tags} is not passed to this command, no references
+are made.
 
-@example
-clark add http://example.org Example \
-          "Some description about Example" \
-          example some more tags
-@end example
+Any tags found in @var{tags}, but not yet present in the database get
+added.
+@end deffn
 
-@noindent
-This will store the bookmark with the URL of ``http://example.org'',
-name ``Example'', description ``Some description about Example'' and
-the tags ``example'', ``some'', ``more'' and ``tags''.  Any arguments
-following the description will be considered tags.
+@deffn Command edit URL [--name NAME] [--description DESCRIPTION]
+Edits @var{url} replacing the bookmark's name if @var{name} is
+specified and replacing the bookmark's description if
+@var{description} is specified. Either option, or both, may be
+specified.
+@end deffn
+
+@deffn Command remove URL
+Removes the bookmark for @var{url} from the database, also deleting
+any references to any tags it has, but not deleting any tags from the
+database.
+@end deffn
+
+@deffn Command set-tags URL [TAGS...]
+Replace @var{url}'s tags with @var{tags}. @var{tags} may be omitted,
+in which case all the tags for @var{url} are removed.
+@end deffn
+
+@node Miscellaneous,  , Management, Usage
+@section Other things that can be done
+
+There are a few commands that help you to work with, or interact with
+through other programs, CLark.
+
+@deffn Command help [COMMAND]
+Provides help. Normally outputs a help message giving a short
+description of how CLark works, but when @var{command} is specified it
+provides help for that command.
+@end deffn
+
+@deffn Command version
+Shows the version of CLark.
+@end deffn
+
+There is also one command-line switch:
+
+@table @samp
+@item --script
+Causes the output of some commands to become more geared towards other
+programs, not using newlines and indentation but instead using the
+unit separator (@code{^_}) and record separator (@code{^^})
+characters. This is to make it easy for other programs to parse the
+data sent to them.
+
+The commands currently affected by this are @samp{search} and the
+default behavior when no commands are passed to CLark.
+@end table
 
 @node Copying This Manual, Index, Usage, Top
 @appendix Copying This Manual
