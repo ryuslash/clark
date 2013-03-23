@@ -24,7 +24,7 @@
 
 * Synopsis
 
-  =clark= <command> [<args> ...]
+  =clark= [options] [<command> [<options> ...]]
 
 * Description
 
@@ -51,14 +51,27 @@
    thing in Common Lisp! So I name it CLark, because it is Common
    Lisp, and a rewrite of mARKam.
 
+* Options
+
+  - =--script= :: Change the output of some commands to be somewhat more
+                machine-friendly, making it easier to parse the data.
+
 * Commands
+
+  - =add= :: Add a new bookmark to the database.
+
+  - =edit= :: Edit a bookmark's information.
+
+  - =exists= :: Check if a bookmark is already present in the database.
 
   - =help= :: Prints a usage and help message, showing a list of
             possible commands and some hints on how to use them.
 
-  - =version= :: Prints the CLark version and then quits.
-
-  - =add= :: Add a new bookmark to the database.
+  - =remove= :: Remove a bookmark from the database.
 
   - =search= :: Search through the database looking for a partial match
               on its name or an exact-matching tag.
+
+  - =set-tags= :: Replace or remove a bookmark's tags.
+
+  - =version= :: Prints the CLark version and then quits.
