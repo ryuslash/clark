@@ -55,7 +55,7 @@
                                (sqlite-error () (get-tag-id tag)))))
                  (insert-bookmark-tag bookmark-id tag-id))) tags)))
 
-(defun check-db (name)
+(defun ensure-db-exists (name)
   "Connect to the database, possibly creating it."
   (let ((db-exists (probe-file name)))
     (setf *db* (connect name))
@@ -76,6 +76,14 @@ The result contains the url and the name of the bookmark."
                      (statement-column-value statement 1))
        finally (finalize-statement statement))))
 
+(defun get-db-location ()
+  "Get the location of the database."
+  (pathname
+   (apply 'concatenate 'string
+          (or (sb-ext:posix-getenv "XDG_DATA_HOME")
+              (list (sb-ext:posix-getenv "HOME") "/.local/share"))
+          '("/clark/bookmarks.db"))))
+
 (defun get-tag-id (name)
   "Get the rowid of tag NAME."
   (execute-single *db* "SELECT rowid FROM tag WHERE name = ?" name))
@@ -94,6 +102,12 @@ The result contains the url and the name of the bookmark."
   "Insert tag NAME into the database and return its rowid."
     (execute-non-query *db* "INSERT INTO tag VALUES (?)" name)
     (last-insert-rowid *db*))
+
+(defun load-db ()
+  "Load the database."
+  (let ((db-location (get-db-location)))
+    (ensure-directories-exist db-location)
+    (ensure-db-exists db-location)))
 
 (eval-when (:compile-toplevel :load-toplevel)
   (defun make-command-name (base)
@@ -169,7 +183,7 @@ BM should be a list containing the url and name of the bookmark."
 
 Connect to the database, parse command-line arguments, execute and
 then disconnect."
-  (check-db "test2.db")
+  (load-db)
   (if (> (length args) 1)
       (parse-args (cdr args))
       (map nil #'print-bookmark (get-bookmarks)))
