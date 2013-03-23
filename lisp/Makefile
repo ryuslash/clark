@@ -14,6 +14,27 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with CLark. If not, see <http://www.gnu.org/licenses/>.
+DESTDIR ?= /usr/local
+LISP = sbcl --disable-debugger
+
+binaries = clark
+install-binaries = $(addprefix install-,$(binaries))
+uninstall-binaries = $(addprefix uninstall-,$(binaries))
+
+.PHONY: all install $(install-binaries) uninstall $(uninstall-binaries) \
+	install-strip
+
+all: $(binaries)
+install: $(install-binaries)
+uninstall: $(uninstall-binaries)
+install-strip:
+	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
+
+$(install-binaries): install-%: %
+	$(INSTALL_PROGRAM) $* "$(DESTDIR)/bin/$*"
+
+$(uninstall-binaries): uninstall-%:
+	rm -f "$(DESTDIR)/bin/$*"
 
 clark: clark.lisp make-image.lisp
-	sbcl --disable-debugger --load make-image.lisp
+	$(LISP) --load make-image.lisp
