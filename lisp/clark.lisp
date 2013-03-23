@@ -118,7 +118,11 @@ The result contains the url, name and the description of the bookmark."
 (defun help-message ()
   (format t (concatenate
              'string
-             "Usage: clark [<command> [<options> ...]]~%"
+             "Usage: clark [options] [<command> [<options> ...]]~%"
+             "~%"
+             "Possible options:~%"
+             "~%"
+             "  --script  Output in a machine-readable format.~%"
              "~%"
              "Possible commands:~%"
              "~%"))
