@@ -182,6 +182,28 @@ omitted or any number of tag names."
       (insert-bookmark url name description)
       (add-tags tags))))
 
+(defcommand edit (:min-args 3)
+    "Edit a bookmark."
+    "Usage: clark edit <url> [--name <name>] \\
+                        [--description <description>]
+
+Edit the information for URL, specifying which part(s) to edit. Each
+option will replace the previous value for that part."
+  (let ((name-lst (member "--name" args :test #'string=))
+        (desc-lst (member "--description" args :test #'string=))
+        query qargs)
+    (when name-lst
+      (setf query (concatenate 'string query "name = ? ")
+            qargs (nconc qargs (list (cadr name-lst)))))
+    (when desc-lst
+      (setf query (concatenate 'string query (when qargs ", ")
+                               "description = ? ")
+            qargs (nconc qargs (list (cadr desc-lst)))))
+    (when qargs
+      (apply #'execute-non-query *db*
+             (format nil "UPDATE bookmark SET ~A WHERE url = ?" query)
+             (append qargs (list (car args)))))))
+
 (defcommand exists (:min-args 1 :max-args 1)
     "Check if a bookmark exists in the database."
     "Usage: clark exists <url>
