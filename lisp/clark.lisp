@@ -170,14 +170,9 @@ omitted or any number of tag names."
 
 Check if URL exists in the database. Prints `yes' when found and `no'
 otherwise."
-  (if (execute-single *db* "SELECT rowid FROM bookmark WHERE url = ?"
-                      (car args))
-      (progn
-        (format t "yes~%")
-        0)
-      (progn
-        (format t "no~%")
-        1)))
+  (format t "~:[no~;yes~]~%"
+          (execute-single
+           *db* "SELECT rowid FROM bookmark WHERE url = ?" (car args))))
 
 (defcommand help
     "Show help message."
