@@ -242,6 +242,15 @@ otherwise."
           (t (format t "~A~%" ldoc))))
       (call-command help '("help"))))
 
+(defcommand remove (:min-args 1 :max-args 1)
+    "Remove a bookmark from the database."
+    "Usage: clark remove <url>
+
+Remove URL from the database."
+  (clear-tags (car args))
+  (execute-non-query
+   *db* "DELETE FROM bookmark WHERE url = ?" (car args)))
+
 (defcommand search (:min-args 1 :max-args 1)
     "Search through bookmarks."
     "Usage: clark search <str>
