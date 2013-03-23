@@ -30,17 +30,17 @@
 (defvar *max-command-name-length* 0
   "Lenght of the longest command name.")
 
-(defmacro defcommand (name doc &body body)
+(defmacro defcommand (name sdoc ldoc &body body)
   "Define a new command usable on the command-line."
   (let* ((sname (symbol-name name))
          (command-name (make-command-name sname)))
     `(progn
        (defun ,command-name (args)
-         ,doc
+         ,sdoc
          ,@body)
        (setf *help-messages*
              (nconc *help-messages*
-                    '((,(string-downcase sname) ,doc "")))
+                    '((,(string-downcase sname) ,sdoc ,ldoc)))
              *max-command-name-length*
              (max *max-command-name-length* (length ,sname))))))
 
@@ -87,6 +87,22 @@ The result contains the url and the name of the bookmark."
 (defun get-tag-id (name)
   "Get the rowid of tag NAME."
   (execute-single *db* "SELECT rowid FROM tag WHERE name = ?" name))
+
+(defun help-message ()
+  (format t (concatenate
+             'string
+             "Usage: clark [<command> [<options> ...]]~%"
+             "~%"
+             "Possible commands:~%"
+             "~%"))
+  (map nil (lambda (hlp)
+             (destructuring-bind (name short long) hlp
+               (declare (ignore long))
+               (format t "  ~vA  ~A~%" *max-command-name-length*
+                       name short))) *help-messages*)
+  (format t "~%~A~%"
+          (concatenate 'string "Use `clark help <command>' to get more "
+                       "information on a command.")))
 
 (defun insert-bookmark (url name description)
   "Insert URL, NAME and DESCRIPTION into the bookmark table."
@@ -135,6 +151,10 @@ BM should be a list containing the url and name of the bookmark."
 
 (defcommand add
     "Add a new bookmark."
+    "Usage: clark add <url> <name> <description> [<tags> ...]
+
+Add URL with NAME, DESCRIPTION and TAGS to the database. TAGS may be
+omitted or any number of tag names."
   (with-transaction *db*
     (destructuring-bind (url name description &rest tags) args
       (insert-bookmark url name description)
@@ -142,6 +162,10 @@ BM should be a list containing the url and name of the bookmark."
 
 (defcommand exists
     "Check if a bookmark exists in the database."
+    "Usage: clark exists <url>
+
+Check if URL exists in the database. Prints `yes' when found and `no'
+otherwise."
   (if (execute-single *db* "SELECT rowid FROM bookmark WHERE url = ?"
                       (car args))
       (progn
@@ -153,22 +177,24 @@ BM should be a list containing the url and name of the bookmark."
 
 (defcommand help
     "Show help message."
-  (declare (ignore args))
-  (format t (concatenate
-             'string
-             "Usage: clark [<command> [<options> ...]]~%"
-             "       clark add <url> <name> <description> [<tags> ...]~%"
-             "~%"
-             "Possible commands:~%"
-             "~%"))
-  (map nil (lambda (hlp)
-             (destructuring-bind (name short long) hlp
-               (declare (ignore long))
-               (format t "  ~vA  ~A~%" *max-command-name-length*
-                       name short))) *help-messages*))
+    help-message
+  (if (> (length args) 0)
+      (let ((ldoc
+             (nth 2 (car (member
+                          (car args) *help-messages*
+                          :test #'(lambda (x y) (equal x (car y))))))))
+        (cond
+          ((null ldoc) (format t "Unkown command: ~A~%" (car args)))
+          ((and (symbolp ldoc) (fboundp ldoc)) (funcall ldoc))
+          (t (format t "~A~%" ldoc))))
+      (help-command '("help"))))
 
 (defcommand search
     "Search through bookmarks."
+    "Usage: clark search <str>
+
+Search the database for STR. Matches are made for substrings of a
+bookmark's name or an exact match for a tag."
   (map
    nil (lambda (bm)
          (destructuring-bind (url name description) bm
@@ -186,6 +212,9 @@ BM should be a list containing the url and name of the bookmark."
 
 (defcommand version
     "Show version."
+    "Usage: clark version
+
+Print the version number and exit."
   (declare (ignore args))
   (format t "clark version ~A~%" *version*))
 
