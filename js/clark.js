@@ -133,7 +133,32 @@ interactive("clark-find-url-new-buffer",
             "find-url-new-buffer",
             $browser_object = browser_object_clark_bookmark);
 
+function clark_exists_p(I) {
+    check_buffer(I.buffer, content_buffer);
+
+    let url_string =
+            load_spec_uri_string(load_spec(I.buffer.top_frame));
+    let command = clark_program + ' exists "' + url_string + '"';
+    var data = "", error = "";
+
+    result = yield shell_command(
+        command,
+        $fds = [{ output: async_binary_string_writer("") },
+                { input: async_binary_reader(function (s) data += s || "") },
+                { input: async_binary_reader(function (s) error += s || "") }]
+    );
+
+    if (error != "")
+        throw new Error("Error occurred with CLark: " + error);
+
+    I.window.minibuffer.message(data);
+}
+
+interactive("clark-exists-p", "Check to see if the current url"
+            + " exists in the database.", clark_exists_p);
+
 define_keymap("clark_keymap");
 define_key(clark_keymap, "a", "clark-add");
+define_key(clark_keymap, "e", "clark-exists-p");
 
 provide("clark");
