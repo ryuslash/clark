@@ -133,5 +133,7 @@ interactive("clark-find-url-new-buffer",
             "find-url-new-buffer",
             $browser_object = browser_object_clark_bookmark);
 
+define_keymap("clark_keymap");
+define_key(clark_keymap, "a", "clark-add");
 
 provide("clark");
