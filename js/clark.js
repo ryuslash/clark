@@ -159,6 +159,9 @@ interactive("clark-exists-p", "Check to see if the current url"
 
 define_keymap("clark_keymap");
 define_key(clark_keymap, "a", "clark-add");
+define_key(clark_keymap, "A", "clark-add-link");
 define_key(clark_keymap, "e", "clark-exists-p");
+define_key(clark_keymap, "f", "clark-find-url");
+define_key(clark_keymap, "F", "clark-find-url-new-buffer");
 
 provide("clark");
