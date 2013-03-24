@@ -72,7 +72,7 @@ interactive("clark-add",
 
 function clark_add_link(I) {
     check_buffer(I.buffer, content_buffer);
-    bo = yield read_browser_object(I);
+    var bo = yield read_browser_object(I);
     let result = yield clark_add_url(I, encodeURIComponent(bo),
                                         bo.textContent);
 
@@ -132,6 +132,35 @@ interactive("clark-find-url-new-buffer",
             "find-url-new-buffer",
             $browser_object = browser_object_clark_bookmark);
 
+function clark_edit(I) {
+    check_buffer(I.buffer, content_buffer);
+
+    let url_string =
+            load_spec_uri_string(load_spec(I.buffer.top_frame));
+    let title = yield I.minibuffer.read(
+        $prompt="name (leave empty to skip): ",
+        $initial_value=I.buffer.title
+    );
+    let description = yield I.minibuffer.read(
+        $prompt="description (leave empty to skip): "
+    );
+    let command = clark_program + ' edit "' + url_string + '" ';
+
+    if (title == "" && description == "")
+        I.window.minibuffer.message('Nothing to change');
+    else {
+        if (title != "")
+            command += "--name '" + title + "' ";
+        if (description != "")
+            command += "--description '" + description + "' ";
+
+        var result = yield shell_command(command);
+        I.window.minibuffer.message("CLark done");
+    }
+}
+interactive("clark-edit", "Edit information for the current URL.",
+            clark_edit);
+
 function clark_exists_p(I) {
     check_buffer(I.buffer, content_buffer);
 
@@ -140,7 +169,7 @@ function clark_exists_p(I) {
     let command = clark_program + ' exists "' + url_string + '"';
     var data = "", error = "";
 
-    result = yield shell_command(
+    var result = yield shell_command(
         command,
         $fds = [{ output: async_binary_string_writer("") },
                 { input: async_binary_reader(function (s) data += s || "") },
@@ -157,9 +186,11 @@ interactive("clark-exists-p", "Check to see if the current url"
             + " exists in the database.", clark_exists_p);
 
 define_keymap("clark_keymap");
+
+define_key(clark_keymap, "?", "clark-exists-p");
 define_key(clark_keymap, "a", "clark-add");
 define_key(clark_keymap, "A", "clark-add-link");
-define_key(clark_keymap, "e", "clark-exists-p");
+define_key(clark_keymap, "e", "clark-edit");
 define_key(clark_keymap, "f", "clark-find-url");
 define_key(clark_keymap, "F", "clark-find-url-new-buffer");
 
