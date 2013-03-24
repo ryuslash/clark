@@ -197,6 +197,24 @@ function clark_remove(I) {
 interactive("clark-remove", "Remove the bookmark of the current URL"
             + " from the database.", clark_remove);
 
+function clark_set_tags(I) {
+    check_buffer(I.buffer, content_buffer);
+
+    let url_string =
+            load_spec_uri_string(load_spec(I.buffer.top_frame));
+    let tags = yield I.minibuffer.read(
+        $prompt="tags (comma delimited): "
+    );
+    let command = clark_program + ' set-tags "' + url_string + '" '
+            + tags.split(',').map(
+                function (str) { return "'" + str.trim() + "'"; }
+            ).join(" ");
+    let result = yield shell_command(command);
+    I.window.minibuffer.message("CLark done");
+}
+interactive("clark-set-tags", "Replace the tags for the bookmark of"
+            + " the current URL.", clark_set_tags);
+
 define_keymap("clark_keymap");
 
 define_key(clark_keymap, "?", "clark-exists-p");
@@ -206,5 +224,6 @@ define_key(clark_keymap, "e", "clark-edit");
 define_key(clark_keymap, "f", "clark-find-url");
 define_key(clark_keymap, "F", "clark-find-url-new-buffer");
 define_key(clark_keymap, "r", "clark-remove");
+define_key(clark_keymap, "t", "clark-set-tags");
 
 provide("clark");
