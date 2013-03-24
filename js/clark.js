@@ -24,6 +24,11 @@
 
 define_variable("clark_program", "clark",
                 "The location of the clark executable.");
+define_variable("clark_bookmarked_string", "+",
+                "Text to show if the current url has been bookmarked.");
+define_variable("clark_not_bookmarked_string", "-",
+                "Text to show it the current url has not been"
+                + " bookmarked.");
 
 define_browser_object_class(
     "clark-bookmark", null,
@@ -85,6 +90,29 @@ interactive("clark-add-link",
             "Select and bookmark a link in clark",
             clark_add_link);
 
+function clark_bookmarked_widget(window) {
+    this.class_name = "clark-bookmark-widget";
+    text_widget.call(this, window);
+    this.add_hook("current_content_buffer_location_change_hook");
+    this.add_hook("select_buffer_hook");
+}
+clark_bookmarked_widget.prototype = {
+    constructor: clark_bookmarked_widget,
+    __proto__: text_widget.prototype,
+    update: function () {
+        var obj = this;
+        function doit () {
+            var result = yield clark_exists_p(
+                obj.window.buffers.current.description
+            );
+            obj.view.text = result == "yes"
+                ? clark_bookmarked_string
+                : clark_not_bookmarked_string;
+        }
+        co_call(doit());
+    }
+};
+
 function clark_complete(input, pos, conservative)
 {
     if (pos == 0 && conservative)
@@ -99,14 +127,18 @@ function clark_complete(input, pos, conservative)
         result = yield shell_command(
             clark_program + " --script",
             $fds = [{ output: async_binary_string_writer("") },
-                    { input: async_binary_reader(function (s) data += s || "") },
-                    { input: async_binary_reader(function (s) error += s || "") }]);
+                    { input: async_binary_reader(
+                        function (s) data += s || "") },
+                    { input: async_binary_reader(
+                        function (s) error += s || "") }]);
     else
         result = yield shell_command_with_argument(
             clark_program + " --script search {}", str,
             $fds = [{ output: async_binary_string_writer("") },
-                    { input: async_binary_reader(function (s) data += s || "") },
-                    { input: async_binary_reader(function (s) error += s || "") }]);
+                    { input: async_binary_reader(
+                        function (s) data += s || "") },
+                    { input: async_binary_reader(
+                        function (s) error += s || "") }]);
 
     if (result != 0 || error != "")
         throw new Error("result: " + result + ", error: " + error);
@@ -161,29 +193,34 @@ function clark_edit(I) {
 interactive("clark-edit", "Edit information for the current URL.",
             clark_edit);
 
-function clark_exists_p(I) {
-    check_buffer(I.buffer, content_buffer);
-
-    let url_string =
-            load_spec_uri_string(load_spec(I.buffer.top_frame));
-    let command = clark_program + ' exists "' + url_string + '"';
+function clark_exists_p(url) {
+    let command = clark_program + ' exists "' + url + '"';
     var data = "", error = "";
 
     var result = yield shell_command(
         command,
         $fds = [{ output: async_binary_string_writer("") },
-                { input: async_binary_reader(function (s) data += s || "") },
-                { input: async_binary_reader(function (s) error += s || "") }]
+                { input: async_binary_reader(
+                    function (s) data += s || "") },
+                { input: async_binary_reader(
+                    function (s) error += s || "") }]
     );
 
     if (error != "")
         throw new Error("Error occurred with CLark: " + error);
 
-    I.window.minibuffer.message(data);
+    yield co_return(data.trim());
 }
 
 interactive("clark-exists-p", "Check to see if the current url"
-            + " exists in the database.", clark_exists_p);
+            + " exists in the database.",
+            function (I) {
+                check_buffer(I.buffer, content_buffer);
+                let data = yield clark_exists_p(
+                    load_spec_uri_string(load_spec(I.buffer.top_frame))
+                );
+                I.window.minibuffer.message(data);
+            });
 
 function clark_remove(I) {
     check_buffer(I.buffer, content_buffer);
