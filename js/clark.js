@@ -18,8 +18,7 @@
 /// Commentary:
 
 // A wrapper script that should allow conkeror to interface with
-// clark.  Does not yet allow searching through collected bookmarks,
-// only adding new ones.
+// CLark.
 
 /// Code:
 
