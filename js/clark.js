@@ -185,6 +185,18 @@ function clark_exists_p(I) {
 interactive("clark-exists-p", "Check to see if the current url"
             + " exists in the database.", clark_exists_p);
 
+function clark_remove(I) {
+    check_buffer(I.buffer, content_buffer);
+
+    let url_string =
+            load_spec_uri_string(load_spec(I.buffer.top_frame));
+    let command = clark_program + ' remove "' + url_string + '"';
+    let result = yield shell_command(command);
+    I.window.minibuffer.message("CLark done");
+}
+interactive("clark-remove", "Remove the bookmark of the current URL"
+            + " from the database.", clark_remove);
+
 define_keymap("clark_keymap");
 
 define_key(clark_keymap, "?", "clark-exists-p");
@@ -193,5 +205,6 @@ define_key(clark_keymap, "A", "clark-add-link");
 define_key(clark_keymap, "e", "clark-edit");
 define_key(clark_keymap, "f", "clark-find-url");
 define_key(clark_keymap, "F", "clark-find-url-new-buffer");
+define_key(clark_keymap, "r", "clark-remove");
 
 provide("clark");
