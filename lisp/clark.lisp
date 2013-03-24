@@ -111,6 +111,14 @@ The result contains the url, name and the description of the bookmark."
               (list (sb-ext:posix-getenv "HOME") "/.local/share"))
           '("/clark/bookmarks.db"))))
 
+(defun get-rc-location ()
+  "Get the location of the RC file."
+  (pathname
+   (apply 'concatenate 'string
+          (or (sb-ext:posix-getenv "XDG_CONFIG_HOME")
+              (list (sb-ext:posix-getenv "HOME") "/.config"))
+          '("/clark/rc.lisp"))))
+
 (defun get-tag-id (name)
   "Get the rowid of tag NAME."
   (execute-single *db* "SELECT rowid FROM tag WHERE name = ?" name))
@@ -155,6 +163,11 @@ The result contains the url, name and the description of the bookmark."
   (let ((db-location (get-db-location)))
     (ensure-directories-exist db-location)
     (ensure-db-exists db-location)))
+
+(defun load-rc ()
+  "Load the RC file."
+  (let ((*package* (in-package :org.ryuslash.clark)))
+    (load (get-rc-location) :if-does-not-exist nil)))
 
 (eval-when (:compile-toplevel :load-toplevel)
   (defun make-command-name (base)
@@ -294,6 +307,7 @@ Print the version number and exit."
 
 Connect to the database, parse command-line arguments, execute and
 then disconnect."
+  (load-rc)
   (load-db)
   (parse-args (cdr args))
   (disconnect *db*))
