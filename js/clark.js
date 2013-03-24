@@ -49,7 +49,7 @@ function clark_add_url(I, url, title)
     let tags = yield I.minibuffer.read(
         $prompt="tags (comma delimited): "
     );
-    let command = clark_program + ' "' + url_string + '" "' + title
+    let command = clark_program + ' add "' + url_string + '" "' + title
             + '" "' + description + '" \''
             + tags.split(',').map(function (str)
                                   { return str.trim(); }).join("' '")
