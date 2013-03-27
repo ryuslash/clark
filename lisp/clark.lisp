@@ -35,31 +35,17 @@
 
 (defmacro call-command (name &rest args)
   (let ((command-name (make-command-name (symbol-name name))))
-    `(,command-name ',args)))
+    `(,command-name ,@args)))
 
-(defmacro defcommand (name (&key (min-args 0) (max-args nil)) sdoc ldoc
+(defmacro defcommand (name (&rest args) sdoc ldoc
                       &body body)
   "Define a new command usable on the command-line."
   (let* ((sname (string-downcase (symbol-name name)))
          (command-name (make-command-name (symbol-name name))))
     `(progn
-       (defun ,command-name (args)
+       (defun ,command-name (,@args)
          ,sdoc
-         (let ((min-args ,min-args)
-               (max-args ,max-args)
-               (num-args (length args)))
-           (cond
-             ((< num-args min-args)
-              (let ((*standard-output* *error-output*))
-                (format t "Too few arguments, need at least ~D, got ~D~%"
-                        min-args num-args)
-                (call-command help ,sname)))
-             ((and max-args (> num-args max-args))
-              (let ((*standard-output* *error-output*))
-                (format t "Too many arguments, need at most ~D, got ~D~%"
-                        max-args num-args)
-                (call-command help ,sname)))
-             (t ,@body))))
+         ,@body)
        (setf *help-messages*
              (nconc *help-messages* '((,sname ,sdoc ,ldoc)))
              *max-command-name-length*
@@ -188,10 +174,17 @@ The executable name should already have been removed."
   (if args
       (let ((cmd-name (make-command-name (car args))))
         (if (fboundp cmd-name)
-            (funcall cmd-name (cdr args))
+            (handler-case (apply cmd-name (cdr args))
+              (sb-int:simple-program-error (err)
+                (if (string-equal (format nil "~A" err)
+                                  "invalid number of arguments" :end1 27)
+                    (let ((*standard-output* *error-output*))
+                      (format t "Wrong number of arguments given.~%")
+                      (call-command help (car args)))
+                    (signal err))))
             (let ((*standard-output* *error-output*))
               (format t "Unknown command: ~A~%" (car args))
-              (call-command help))))
+              (call-command help "help"))))
       (map nil #'print-bookmark (get-bookmarks))))
 
 (defun print-bookmark (bm)
@@ -204,26 +197,25 @@ bookmark."
         (format t "~A~A~A" name description url)
         (format t "~A~%  ~A~%  ~A~%~%" url name description))))
 
-(defcommand add (:min-args 3)
+(defcommand add (url name description &rest tags)
     "Add a new bookmark."
     "Usage: clark add <url> <name> <description> [<tags> ...]
 
 Add URL with NAME, DESCRIPTION and TAGS to the database. TAGS may be
 omitted or any number of tag names."
   (with-transaction *db*
-    (destructuring-bind (url name description &rest tags) args
-      (insert-bookmark url name description)
-      (add-tags (last-insert-rowid *db*) tags))))
+    (insert-bookmark url name description)
+    (add-tags (last-insert-rowid *db*) tags)))
 
-(defcommand edit (:min-args 3)
+(defcommand edit (url &rest rest)
     "Edit a bookmark."
     "Usage: clark edit <url> [--name <name>] \\
                         [--description <description>]
 
 Edit the information for URL, specifying which part(s) to edit. Each
 option will replace the previous value for that part."
-  (let ((name-lst (member "--name" args :test #'string=))
-        (desc-lst (member "--description" args :test #'string=))
+  (let ((name-lst (member "--name" rest :test #'string=))
+        (desc-lst (member "--description" rest :test #'string=))
         query qargs)
     (when name-lst
       (setf query (concatenate 'string query "name = ? ")
@@ -235,9 +227,9 @@ option will replace the previous value for that part."
     (when qargs
       (apply #'execute-non-query *db*
              (format nil "UPDATE bookmark SET ~A WHERE url = ?" query)
-             (append qargs (list (car args)))))))
+             (append qargs (list url))))))
 
-(defcommand exists (:min-args 1 :max-args 1)
+(defcommand exists (url)
     "Check if a bookmark exists in the database."
     "Usage: clark exists <url>
 
@@ -245,32 +237,32 @@ Check if URL exists in the database. Prints `yes' when found and `no'
 otherwise."
   (format t "~:[no~;yes~]~%"
           (execute-single
-           *db* "SELECT rowid FROM bookmark WHERE url = ?" (car args))))
+           *db* "SELECT rowid FROM bookmark WHERE url = ?" url)))
 
-(defcommand help (:max-args 1)
+(defcommand help (&optional command)
     "Show help message."
     help-message
-  (if (> (length args) 0)
+  (if command
       (let ((ldoc
              (nth 2 (car (member
-                          (car args) *help-messages*
+                          command *help-messages*
                           :test #'(lambda (x y) (equal x (car y))))))))
         (cond
-          ((null ldoc) (format t "Unkown command: ~A~%" (car args)))
+          ((null ldoc) (format t "Unkown command: ~A~%" command))
           ((and (symbolp ldoc) (fboundp ldoc)) (funcall ldoc))
           (t (format t "~A~%" ldoc))))
       (call-command help "help")))
 
-(defcommand remove (:min-args 1 :max-args 1)
+(defcommand remove (url)
     "Remove a bookmark from the database."
     "Usage: clark remove <url>
 
 Remove URL from the database."
-  (clear-tags (car args))
+  (clear-tags url)
   (execute-non-query
-   *db* "DELETE FROM bookmark WHERE url = ?" (car args)))
+   *db* "DELETE FROM bookmark WHERE url = ?" url))
 
-(defcommand search (:min-args 1 :max-args 1)
+(defcommand search (str)
     "Search through bookmarks."
     "Usage: clark search <str>
 
@@ -286,18 +278,18 @@ bookmark's name or an exact match for a tag."
                           "FROM tag "
                           "JOIN bookmark_tag ON (tag_id = tag.rowid) "
                           "WHERE bookmark_id = bookmark.rowid)")
-        (format nil "%~A%" (car args)) (car args))))
+        (format nil "%~A%" str) str)))
 
-(defcommand set-tags (:min-args 1)
+(defcommand set-tags (url &rest tags)
     "Set a bookmark's tags."
     "Usage: clark set-tags <url> [<tags> ...]
 
 Set bookmark URL's tags to the given list, overwriting the previous
 list of tags."
-  (clear-tags (car args))
-  (add-tags (car args) (cdr args)))
+  (clear-tags url)
+  (add-tags url tags))
 
-(defcommand version (:max-args 0)
+(defcommand version ()
     "Show version."
     "Usage: clark version
 
