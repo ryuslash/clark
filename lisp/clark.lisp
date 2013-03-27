@@ -194,7 +194,7 @@ BM should be a list containing the url, name and description of the
 bookmark."
   (destructuring-bind (url name description) bm
     (if *script*
-        (format t "~A~A~A" name description url)
+        (format t "~A~A~A" url name description)
         (format t "~A~%  ~A~%  ~A~%~%" url name description))))
 
 (defcommand add (url name description &rest tags)

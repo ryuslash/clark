@@ -148,9 +148,9 @@ function clark_complete(input, pos, conservative)
         });
 
         let c = { count: ret.length,
-                  get_string: function (i) ret[i][0],
-                  get_description: function (i) ret[i][1],
-                  get_input_state: function (i) [ret[i][2]] };
+                  get_string: function (i) ret[i][1],
+                  get_description: function (i) ret[i][2],
+                  get_input_state: function (i) [ret[i][0]] };
         yield co_return(c);
     }
 }
