@@ -50,13 +50,15 @@
                (num-args (length args)))
            (cond
              ((< num-args min-args)
-              (format t "Too few arguments, need at least ~D, got ~D~%"
-                      min-args num-args)
-              (call-command help ,sname))
+              (let ((*standard-output* *error-output*))
+                (format t "Too few arguments, need at least ~D, got ~D~%"
+                        min-args num-args)
+                (call-command help ,sname)))
              ((and max-args (> num-args max-args))
-              (format t "Too many arguments, need at most ~D, got ~D~%"
-                      max-args num-args)
-              (call-command help ,sname))
+              (let ((*standard-output* *error-output*))
+                (format t "Too many arguments, need at most ~D, got ~D~%"
+                        max-args num-args)
+                (call-command help ,sname)))
              (t ,@body))))
        (setf *help-messages*
              (nconc *help-messages* '((,sname ,sdoc ,ldoc)))
@@ -187,7 +189,7 @@ The executable name should already have been removed."
       (let ((cmd-name (make-command-name (car args))))
         (if (fboundp cmd-name)
             (funcall cmd-name (cdr args))
-            (progn
+            (let ((*standard-output* *error-output*))
               (format t "Unknown command: ~A~%" (car args))
               (call-command help))))
       (map nil #'print-bookmark (get-bookmarks))))
