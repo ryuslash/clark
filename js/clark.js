@@ -58,7 +58,7 @@ function clark_add_url(I, url, title)
             + tags.split(',').map(function (str)
                                   { return str.trim(); }).join("' '")
             + "'";
-    yield shell_command(command);
+    yield clark_shell_command(command);
 }
 
 function clark_add(I) {
@@ -186,8 +186,12 @@ function clark_edit(I) {
         if (description != "")
             command += "--description '" + description + "' ";
 
-        var result = yield shell_command(command);
-        I.window.minibuffer.message("CLark done");
+        var result = yield clark_shell_command(command);
+
+        if (result)
+            I.window.minibuffer.message("CLark done");
+        else
+            I.window.minibuffer.message("Error during CLark operation.");
     }
 }
 interactive("clark-edit", "Edit information for the current URL.",
@@ -228,8 +232,12 @@ function clark_remove(I) {
     let url_string =
             load_spec_uri_string(load_spec(I.buffer.top_frame));
     let command = clark_program + ' remove "' + url_string + '"';
-    let result = yield shell_command(command);
-    I.window.minibuffer.message("CLark done");
+    let result = yield clark_shell_command(command);
+
+    if (result)
+        I.window.minibuffer.message("CLark done");
+    else
+        I.window.minibuffer.message("Error during CLark operation.");
 }
 interactive("clark-remove", "Remove the bookmark of the current URL"
             + " from the database.", clark_remove);
@@ -246,11 +254,32 @@ function clark_set_tags(I) {
             + tags.split(',').map(
                 function (str) { return "'" + str.trim() + "'"; }
             ).join(" ");
-    let result = yield shell_command(command);
-    I.window.minibuffer.message("CLark done");
+    let result = yield clark_shell_command(command);
+
+    if (result)
+        I.window.minibuffer.message("CLark done");
+    else
+        I.window.minibuffer.message("Error during CLark operation.");
 }
 interactive("clark-set-tags", "Replace the tags for the bookmark of"
             + " the current URL.", clark_set_tags);
+
+function clark_shell_command(command)
+{
+    let data = "", error = "";
+    yield shell_command(
+        command,
+        $fds = [{ output: async_binary_string_writer("") },
+                { input: async_binary_reader(
+                    function (s) data += s || ""
+                )},
+                { input: async_binary_reader(
+                    function (s) error += s || ""
+                )}]
+    );
+
+    yield co_return(error == "");
+}
 
 define_keymap("clark_keymap");
 
