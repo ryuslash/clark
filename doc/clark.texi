@@ -53,6 +53,7 @@ The document was typeset with
 @c Generate the nodes for this menu with `C-c C-u C-m'.
 @menu
 * Usage::                       How to use CLark
+* Customization::               Customizing CLark
 * Copying This Manual::
 * Index::
 
@@ -74,7 +75,7 @@ Copying This Manual
 
 @c Update all node entries with `C-c C-u C-n'.
 @c Insert new nodes with `C-c C-c n'.
-@node Usage, Copying This Manual, Top, Top
+@node Usage, Customization, Top, Top
 @chapter How to use
 
 For the moment CLark is a simple program, it has only a few functions.
@@ -176,7 +177,54 @@ The commands currently affected by this are @samp{search} and the
 default behavior when no commands are passed to CLark.
 @end table
 
-@node Copying This Manual, Index, Usage, Top
+@node Customization, Copying This Manual, Usage, Top
+@chapter Customizing CLark
+
+During start-up CLark looks for a file named @file{rc.lisp} either int
+@code{@var{xdg_config_dir}/clark} or in
+@code{@var{home}/.config/clark}. If it finds one it loads it. This
+allows for customization to happen.
+
+At the moment CLark offers very little customization. The only thing
+that can be done at the moment is write your own commands. For
+example, to easily show all your ``to read'' bookmarks, you could add
+the following to your @file{rc.lisp}:
+
+@lisp
+(defcommand toread ()
+  "Show bookmarks to read."
+  "Usage: clark toread
+
+Show all bookmarks that I should still read."
+  (call-command search "toread"))
+@end lisp
+
+@noindent
+assuming that you tag them with ``toread''. The syntax is fairly
+simple, if you're familiar with Lisp:
+
+@deffn Macro defcommand NAME ARGS SHORT-DOC LONG-DOC BODY...
+Defines a command @var{name}, which is callable from the command line.
+
+@var{args} is a lambda-list like the ones found in regular lisp
+@code{defun} calls. It gets pasted into a @code{defun}, so technically
+it supports anything @code{defun} does, but @code{&keys} arguments are
+not practically usable at the moment.
+
+The @var{short-doc} gets used as the command's docstring and is the
+short message you will see in the output of the general @samp{help}
+command.
+
+The @var{long-doc} is used to generate the @samp{help <command>} help
+message, it does not yet automatically print any usage information, it
+is your responsibility to provide this in this string.
+
+@var{body} is the body of the command, which is just like a regular
+Lisp function. It has access to the arguments as defined in @var{args}
+and anything any regular Lisp function does.
+@end deffn
+
+@node Copying This Manual, Index, Customization, Top
 @appendix Copying This Manual
 
 @menu
