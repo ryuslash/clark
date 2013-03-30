@@ -21,6 +21,10 @@
 
 (export '(clark))
 
+(defmacro sql (&body body)
+  (apply 'concatenate 'string
+         (mapcar (lambda (itm) (format nil "~A " itm)) body)))
+
 (defvar *db* nil
   "The database connection.")
 
@@ -69,7 +73,8 @@
   (when url-or-id
     (if (integerp url-or-id)
         (execute-non-query
-         *db* "DELETE FROM bookmark_tag WHERE bookmark_id = ?" url-or-id)
+         *db* (sql delete from "bookmark_tag" where "bookmark_id" = ?)
+         url-or-id)
         (clear-tags (get-bookmark-id url-or-id)))))
 
 (defun ensure-db-exists (name)
@@ -77,19 +82,30 @@
   (let ((db-exists (probe-file name)))
     (setf *db* (connect name))
     (unless db-exists
-      (execute-non-query *db* "CREATE TABLE bookmark (url VARCHAR(255) UNIQUE, date INTEGER, name VARCHAR(255), description TEXT)")
-      (execute-non-query *db* "CREATE TABLE tag (name VARCHAR(255) UNIQUE)")
-      (execute-non-query *db* "CREATE TABLE bookmark_tag (bookmark_id INTEGER REFERENCES bookmark(rowid), tag_id INTEGER REFERENCES tag(rowid), PRIMARY KEY (bookmark_id, tag_id))"))))
+      (execute-non-query
+       *db* (sql create table "bookmark" ("url" varchar (255) unique\,
+                                          "date" integer\,
+                                          "name" varchar (255)\,
+                                          "description" text)))
+      (execute-non-query
+       *db* (sql create table "tag" ("name" varchar (255) unique)))
+      (execute-non-query
+       *db* (sql create table "bookmark_tag"
+                 ("bookmark_id" integer references "bookmark(rowid)"\,
+                  "tag_id" integer references "tag(rowid)"\,
+                  primary key ("bookmark_id"\,  "tag_id")))))))
 
 (defun get-bookmarks ()
   "Get a list of all bookmarks.
 
 The result contains the url, name and the description of the bookmark."
-  (execute-to-list *db* "select url, name, description from bookmark"))
+  (execute-to-list
+   *db* (sql select "url, name, description" from "bookmark")))
 
 (defun get-bookmark-id (url)
   "Get the id of the bookmark for URL."
-  (execute-single *db* "SELECT rowid FROM bookmark WHERE url = ?" url))
+  (execute-single
+   *db* (sql select "rowid" from "bookmark" where "url" = ?) url))
 
 (defun get-db-location ()
   "Get the location of the database."
@@ -109,7 +125,8 @@ The result contains the url, name and the description of the bookmark."
 
 (defun get-tag-id (name)
   "Get the rowid of tag NAME."
-  (execute-single *db* "SELECT rowid FROM tag WHERE name = ?" name))
+  (execute-single
+   *db* (sql select "rowid" from "tag" where "name" = ?) name))
 
 (defun help-message ()
   (format t (concatenate
@@ -133,18 +150,20 @@ The result contains the url, name and the description of the bookmark."
 
 (defun insert-bookmark (url name description)
   "Insert URL, NAME and DESCRIPTION into the bookmark table."
-  (execute-non-query *db* "INSERT INTO bookmark VALUES (?, ?, ?, ?)"
-                     url (get-universal-time) name description))
+  (execute-non-query
+   *db* (sql insert into "bookmark" values (?\, ?\, ?\, ?))
+   url (get-universal-time) name description))
 
 (defun insert-bookmark-tag (bookmark-id tag-id)
   "Insert BOOKMARK-ID and TAG-ID into the bookmark_tag table."
-  (execute-non-query *db* "INSERT INTO bookmark_tag VALUES (?, ?)"
-                     bookmark-id tag-id))
+  (execute-non-query
+   *db* (sql insert into "bookmark_tag" values (?\, ?))
+   bookmark-id tag-id))
 
 (defun insert-tag (name)
   "Insert tag NAME into the database and return its rowid."
-    (execute-non-query *db* "INSERT INTO tag VALUES (?)" name)
-    (last-insert-rowid *db*))
+  (execute-non-query *db* (sql insert into "tag" values (?)) name)
+  (last-insert-rowid *db*))
 
 (defun load-db ()
   "Load the database."
@@ -226,7 +245,8 @@ option will replace the previous value for that part."
             qargs (nconc qargs (list (cadr desc-lst)))))
     (when qargs
       (apply #'execute-non-query *db*
-             (format nil "UPDATE bookmark SET ~A WHERE url = ?" query)
+             (format
+              nil (sql update "bookmark" set "~A" where "url" = ?) query)
              (append qargs (list url))))))
 
 (defcommand exists (url)
@@ -235,9 +255,10 @@ option will replace the previous value for that part."
 
 Check if URL exists in the database. Prints `yes' when found and `no'
 otherwise."
-  (format t "~:[no~;yes~]~%"
-          (execute-single
-           *db* "SELECT rowid FROM bookmark WHERE url = ?" url)))
+  (format
+   t "~:[no~;yes~]~%"
+   (execute-single
+    *db* (sql select "rowid" from "bookmark" where "url" = ?) url)))
 
 (defcommand help (&optional command)
     "Show help message."
@@ -260,7 +281,7 @@ otherwise."
 Remove URL from the database."
   (clear-tags url)
   (execute-non-query
-   *db* "DELETE FROM bookmark WHERE url = ?" url))
+   *db* (sql delete from "bookmark" where "url" = ?) url))
 
 (defcommand search (str)
     "Search through bookmarks."
@@ -270,14 +291,13 @@ Search the database for STR. Matches are made for substrings of a
 bookmark's name or an exact match for a tag."
   (map nil #'print-bookmark
        (execute-to-list
-        *db* (concatenate 'string
-                          "SELECT url, name, description "
-                          "FROM bookmark "
-                          "WHERE name LIKE ? "
-                          "OR ? IN (SELECT name "
-                          "FROM tag "
-                          "JOIN bookmark_tag ON (tag_id = tag.rowid) "
-                          "WHERE bookmark_id = bookmark.rowid)")
+        *db* (sql select "url, name, description"
+                  from "bookmark"
+                  where "name" like ?
+                  or ? in (select "name"
+                           from "tag"
+                           join "bookmark_tag" on ("tag_id = tag.rowid")
+                           where "bookmark_id" = "bookmark.rowid"))
         (format nil "%~A%" str) str)))
 
 (defcommand set-tags (url &rest tags)
