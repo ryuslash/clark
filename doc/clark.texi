@@ -168,10 +168,10 @@ provides help for that command.
 Shows the version of CLark.
 @end deffn
 
-There is also one command-line switch:
+There is also one command-line switch. Switches can be used with
+either @samp{-} or @samp{--}:
 
-@table @samp
-@item --script
+@deffn Switch script
 Causes the output of some commands to become more geared towards other
 programs, not using newlines and indentation but instead using the
 unit separator (@code{^_}) and record separator (@code{^^})
@@ -180,7 +180,7 @@ data sent to them.
 
 The commands currently affected by this are @samp{search} and the
 default behavior when no commands are passed to CLark.
-@end table
+@end deffn
 
 @node Customization, Interaction, Usage, Top
 @chapter Customizing CLark
