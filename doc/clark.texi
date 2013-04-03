@@ -295,7 +295,7 @@ bookmarked with CLark. Default is @samp{-}.
 
 @c Get fdl.texi from http://www.gnu.org/licenses/fdl.html
 @node GNU Free Documentation License,  , Copying This Manual, Copying This Manual
-@appendixsec
+@appendixsec GNU Free Documentation License
 @include fdl.texi
 
 @node Index,  , Copying This Manual, Top
