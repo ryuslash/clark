@@ -54,6 +54,7 @@ The document was typeset with
 @menu
 * Usage::                       How to use CLark
 * Customization::               Customizing CLark
+* Interaction::                 Interacting with other programs.
 * Copying This Manual::
 * Index::
 
@@ -65,6 +66,10 @@ How to use
 * Querying::                    Getting bookmarks from the database.
 * Management::                  Maintaining bookmarks in the database.
 * Miscellaneous::               Other things that can be done.
+
+Interacting with other programs
+
+* Conkeror::                    Interacting with the Conkeror web browser
 
 Copying This Manual
 
@@ -177,7 +182,7 @@ The commands currently affected by this are @samp{search} and the
 default behavior when no commands are passed to CLark.
 @end table
 
-@node Customization, Copying This Manual, Usage, Top
+@node Customization, Interaction, Usage, Top
 @chapter Customizing CLark
 
 During start-up CLark looks for a file named @file{rc.lisp} either int
@@ -224,7 +229,64 @@ Lisp function. It has access to the arguments as defined in @var{args}
 and anything any regular Lisp function does.
 @end deffn
 
-@node Copying This Manual, Index, Customization, Top
+@node Interaction, Copying This Manual, Customization, Top
+@chapter Interacting with other programs
+
+CLark is meant to interact with other tools. Most of the time, using
+the command-line to keep track of your bookmarks won't be very useful,
+as copying an URL, pasting it in your terminal, copying the title,
+pasting it in your terminal, and so on, take long and gets annoying
+very fast.
+
+@menu
+* Conkeror::                    Interacting with the Conkeror web browser
+@end menu
+
+@node Conkeror,  , Interaction, Interaction
+@section Interacting with the Conkeror web browser
+
+Conkeror is a web browser that is based on the idea of Emacs. It is
+very customizable. CLark has a module to work with this browser, it
+offers most commands available on the command line. To use it you
+should first add it to your load path and then load it:
+
+@example
+load_paths.push("file:///path/to/clark/js/");
+require("clark");
+@end example
+
+After this you may wish to bind the clark keymap to an easy to use
+key, like:
+
+@example
+define_key(content_buffer_normal_keymap, "b", clark_keymap);
+@end example
+
+You may even wish to show whether or not the current url has been
+saved or not:
+
+@example
+add_hook("mode-line-hook", mode_line_adder(clark_bookmarked_widget), true);
+@end example
+
+The conkeror module only offers a little customization at the moment:
+
+@defopt clark_program
+In case you haven't installed CLark in your @var{path}, you can
+specify its real location.
+@end defopt
+
+@defopt clark_bookmarked_string
+What to show in the minibuffer when the current URL has been
+bookmarked with CLark. Default is @samp{+}.
+@end defopt
+
+@defopt clark_not_bookmarked_string
+What to show in the minibuffer when the current URL has not been
+bookmarked with CLark. Default is @samp{-}.
+@end defopt
+
+@node Copying This Manual, Index, Interaction, Top
 @appendix Copying This Manual
 
 @menu
