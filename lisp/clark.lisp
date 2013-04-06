@@ -174,7 +174,7 @@ The result contains the url, name and the description of the bookmark."
   (let ((*package* (in-package :org.ryuslash.clark)))
     (load (get-rc-location) :if-does-not-exist nil)))
 
-(eval-when (:compile-toplevel :load-toplevel)
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (defun make-command-name (base)
     "Turn BASE into the name of a possible command."
     (intern (concatenate 'string (string-upcase base) "-COMMAND")
