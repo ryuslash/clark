@@ -35,23 +35,40 @@
 (defvar *script* nil
   "Whether or not to output in a machine-readable format.")
 
+(defvar *exit-status* 0
+  "The exit status to use on quit.")
+
 (defmacro call-command (name &rest args)
   (let ((command-name (make-command-name (symbol-name name))))
     `(,command-name ,@args)))
 
-(defmacro defcommand (name (&rest args) sdoc ldoc
-                      &body body)
+(defmacro defcommand (name (&rest args) sdoc ldoc &body body)
   "Define a new command usable on the command-line."
   (let* ((sname (string-downcase (symbol-name name)))
          (command-name (make-command-name (symbol-name name))))
     `(progn
        (defun ,command-name (,@args)
          ,sdoc
-         ,@body)
+         ,@body
+         (sb-ext:exit :code *exit-status*))
        (setf *help-messages*
              (nconc *help-messages* '((,sname ,sdoc ,ldoc)))
              *max-command-name-length*
              (max *max-command-name-length* (length ,sname))))))
+
+(defmacro with-error-and-help (code cmd fmt &rest args)
+  "Call `with-error-status' with CODE, format FMT with ARGS and call
+the help command."
+  `(with-error-status ,code
+     (format t ,fmt ,@args)
+     (call-command help ,cmd)))
+
+(defmacro with-error-status (code &body body)
+  "Bind `*exit-status*' to CODE, `*standard-output*' to
+`*error-output*' and execute BODY."
+  `(let ((*standard-output* *error-output*)
+         (*exit-status* ,code))
+     ,@body))
 
 (defconstant *version* "0.1.0"
   "Clark's version.")
@@ -191,7 +208,9 @@ The executable name should already have been removed."
   (loop while (and args (char= (char (car args) 0) #\-))
      do (case (intern (string-upcase (string-left-trim "-" (car args)))
                       :org.ryuslash.clark)
-          (script (setf *script* t args (cdr args)))))
+          (script (setf *script* t args (cdr args)))
+          (t (with-error-and-help
+                 1 "help" "Unknown option: ~a~%" (car args)))))
   (if args
       (let ((cmd-name (make-command-name (car args))))
         (if (fboundp cmd-name)
@@ -199,13 +218,11 @@ The executable name should already have been removed."
               (sb-int:simple-program-error (err)
                 (if (string-equal (format nil "~A" err)
                                   "invalid number of arguments" :end1 27)
-                    (let ((*standard-output* *error-output*))
-                      (format t "Wrong number of arguments given.~%")
-                      (call-command help (car args)))
+                    (with-error-and-help
+                        1 (car args) "Wrong number of arguments given.~%")
                     (signal err))))
-            (let ((*standard-output* *error-output*))
-              (format t "Unknown command: ~A~%" (car args))
-              (call-command help "help"))))
+            (with-error-and-help
+                1 "help" "Unknown command: ~A~%" (car args))))
       (map nil #'print-bookmark (get-bookmarks))))
 
 (defun print-bookmark (bm)
@@ -271,7 +288,9 @@ otherwise."
                           command *help-messages*
                           :test #'(lambda (x y) (equal x (car y))))))))
         (cond
-          ((null ldoc) (format t "Unkown command: ~A~%" command))
+          ((null ldoc)
+           (with-error-and-help
+               1 "help" "Unknown command: ~a~%" command))
           ((and (symbolp ldoc) (fboundp ldoc)) (funcall ldoc))
           (t (format t "~A~%" ldoc))))
       (call-command help "help")))
