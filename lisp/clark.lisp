@@ -107,19 +107,23 @@ The result contains the url, name and the description of the bookmark."
 
 (defun get-db-location ()
   "Get the location of the database."
-  (pathname
-   (apply 'concatenate 'string
-          (or (sb-ext:posix-getenv "XDG_DATA_HOME")
-              (list (sb-ext:posix-getenv "HOME") "/.local/share"))
-          '("/clark/bookmarks.db"))))
+  (let ((xdg (sb-ext:posix-getenv "XDG_DATA_HOME"))
+        (home (sb-ext:posix-getenv "HOME")))
+    (pathname
+     (apply 'concatenate 'string
+            (or xdg home)
+            (unless xdg "/.local/share")
+            '("/clark/bookmarks.db")))))
 
 (defun get-rc-location ()
   "Get the location of the RC file."
-  (pathname
-   (apply 'concatenate 'string
-          (or (sb-ext:posix-getenv "XDG_CONFIG_HOME")
-              (list (sb-ext:posix-getenv "HOME") "/.config"))
-          '("/clark/rc.lisp"))))
+  (let ((xdg (sb-ext:posix-getenv "XDG_CONFIG_HOME"))
+        (home (sb-ext:posix-getenv "HOME")))
+    (pathname
+     (apply 'concatenate 'string
+            (or xdg home)
+            (unless xdg "/.config")
+            '("/clark/rc.lisp")))))
 
 (defun get-tag-id (name)
   "Get the rowid of tag NAME."
