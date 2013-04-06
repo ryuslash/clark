@@ -19,8 +19,6 @@
 
 (in-package :org.ryuslash.clark)
 
-(export '(clark))
-
 (defmacro sql (&body body)
   (apply 'concatenate 'string
          (mapcar (lambda (itm) (format nil "~A " itm)) body)))

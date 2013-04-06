@@ -18,4 +18,5 @@
 ;;; Code:
 
 (defpackage :org.ryuslash.clark
-  (:use :clim :clim-lisp :sqlite))
+  (:use :clim :clim-lisp :sqlite)
+  (:export :clark))
