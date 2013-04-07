@@ -5,8 +5,7 @@
 
   - Any errors that are caught will now exit with status code 1. This
     makes it easier for other programs, like Conkeror, to determine
-    if an action was succesful. This does not yet happen if an
-    uncaught exception occurs.
+    if an action was succesful.
 
   - Errors are now printed to ~stderr~ more consistently.
 
