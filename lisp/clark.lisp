@@ -70,7 +70,7 @@ the help command."
          (*exit-status* ,code))
      ,@body))
 
-(defconstant *version* "0.1.0"
+(defconstant version "0.1.0"
   "Clark's version.")
 
 (defun add-tags (url-or-id tags)
@@ -335,7 +335,7 @@ list of tags."
     "Usage: clark version
 
 Print the version number and exit."
-  (format t "clark version ~A~%" *version*))
+  (format t "clark version ~A~%" version))
 
 (defun clark (args)
   "Main function.
