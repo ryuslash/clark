@@ -24,7 +24,7 @@
 (defsystem :clark
   :name "CLark"
   :author "Tom Willemsen <tom@ryuslash.org>"
-  :version "0.1.0"
+  :version "0.1.1"
   :maintainer "Tom Willemsen <tom@ryuslash.org>"
   :description "Keep bookmarks, in lisp."
   :serial t
