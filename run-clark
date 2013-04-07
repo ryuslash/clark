@@ -22,6 +22,6 @@
 
 ## Code:
 
-sbcl --eval "(progn (require 'sqlite) (require 'mcclim))" \
+sbcl --eval "(require 'sqlite)" \
     --load lisp/package.lisp --load lisp/clark.lisp \
     --eval "(org.ryuslash.clark:clark sb-ext:*posix-argv*)"
