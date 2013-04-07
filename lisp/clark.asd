@@ -28,6 +28,6 @@
   :maintainer "Tom Willemsen <tom@ryuslash.org>"
   :description "Keep bookmarks, in lisp."
   :serial t
-  :depends-on (:mcclim)
+  :depends-on (:sqlite)
   :components ((:file "package")
                (:file "clark")))

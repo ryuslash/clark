@@ -21,8 +21,6 @@
 (error "This lisp implementation iss not supported.")
 
 (require 'asdf)
-(require 'sqlite)
-(require 'mcclim)
 
 (asdf:oos 'asdf:load-op 'clark)
 
