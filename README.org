@@ -18,20 +18,22 @@
 #+TITLE: CLark
 #+STARTUP: showall
 
-* Name
+* NAME
 
-  clark - collect bookmarks on your command-line
+  CLark - collect bookmarks on your command-line
 
-* Synopsis
+* SYNOPSIS
 
-  =clark= [options] [<command> [<options> ...]]
+  =clark [<options>...] [<command> [<options>...] [<arguments>...]]=
 
-* Description
+* DESCRIPTION
 
-  CLark is a bookmark collection application for the command-line. It
-  is a drag being dependant on your browser or an internet connection
-  to be able to collect, manage and look through your bookmarks, so
-  we're breaking free... slowly.
+  CLark is a bookmarking program for the command-line. It is meant to
+  interface with other programs to make its use easy, whilst remaining
+  free of being locked in to any single browser or program (except for
+  itself). This should allow you to keep your bookmarks in a single,
+  easily accessible, place regardles of which browser you use at any
+  moment.
 
 ** CLark?! What the ...?
 
@@ -51,12 +53,12 @@
    thing in Common Lisp! So I name it CLark, because it is Common
    Lisp, and a rewrite of mARKam.
 
-* Options
+* COMMANDS
 
-  - =--script= :: Change the output of some commands to be somewhat more
-                machine-friendly, making it easier to parse the data.
-
-* Commands
+  Each command has it's own arguments and description, to see:
+  #+BEGIN_EXAMPLE
+    clark help <command>
+  #+END_EXAMPLE
 
   - =add= :: Add a new bookmark to the database.
 
@@ -65,13 +67,20 @@
   - =exists= :: Check if a bookmark is already present in the database.
 
   - =help= :: Prints a usage and help message, showing a list of
-            possible commands and some hints on how to use them.
+            possible commands and some hints on how to use them. Can
+            also show help messages for individual commands.
 
   - =remove= :: Remove a bookmark from the database.
 
-  - =search= :: Search through the database looking for a partial match
-              on its name or an exact-matching tag.
+  - =search= :: Search through bookmarks for a certain title or tag.
 
   - =set-tags= :: Replace or remove a bookmark's tags.
 
-  - =version= :: Prints the CLark version and then quits.
+  - =version= :: Print CLark's version.
+
+* OPTIONS
+
+  Command-line options can be passed to CLark with either =-= or =--=.
+
+  - =script= :: Change the output of some commands to be somewhat more
+              machine-friently, making it easier to parse the data.

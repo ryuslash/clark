@@ -1,0 +1,35 @@
+#+TITLE: CLark
+#+LINK_HOME: http://ryuslash.org/
+#+OPTIONS: num:nil toc:nil author:nil
+#+STARTUP: showall
+#+STYLE: <link rel="stylesheet" type="text/css" href="stylesheet.css" />
+#+MACRO: ver 0.1.1
+
+#+BEGIN_CENTER
+[[http://code.ryuslash.org/cgit.cgi/clark/][Browse source]]
+[[http://blog.ryuslash.org/tags/clark][Read posts]]
+Download: [[http://code.ryuslash.org/cgit.cgi/clark/snapshot/clark-{{{ver}}}.tar.gz][TAR.GZ]], [[http://code.ryuslash.org/cgit.cgi/clark/snapshot/clark-{{{ver}}}.zip][ZIP]]
+#+END_CENTER
+
+#+INCLUDE: "../README.org"
+
+* INTEGRATION
+
+  CLark is mean to be used by other tools (as well as you on the
+  command-line).
+
+** Conkeror
+
+#+INCLUDE: "../js/README.org" :minlevel 3
+
+* INSTALLING
+
+#+INCLUDE: "../INSTALL" :minlevel 2
+
+* CONTRIBUTING
+
+#+INCLUDE: "../CONTRIBUTING" :minlevel 2
+
+* NEWS
+
+#+INCLUDE: "../NEWS" :minlevel 2

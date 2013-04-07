@@ -1,0 +1,48 @@
+# -*- mode: org; -*-
+# Copyright (C) 2013 Tom Willemsen <tom at ryuslash dot org>
+#
+# This file is part of CLark
+#
+# CLark is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CLark is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with CLark. If not, see <http://www.gnu.org/licenses/>.
+
+#+STARTUP: showall
+
+CLark currently only targets SBCL, but I am not averse to porting it,
+or having it ported, to another (free) Common Lisp implementation.
+
+* Requirements
+
+  - [[http://sbcl.org][SBCL]]
+  - [[http://common-lisp.net/project/cl-sqlite/][cl-sqlite]]
+
+  The easiest way to install ~cl-sql~ would be to use [[http://quicklisp.org/beta/][quicklisp]]. Once
+  you have that set-up it should be a matter of:
+  #+BEGIN_EXAMPLE
+    (ql:quickload "sqlite")
+  #+END_EXAMPLE
+
+* Installation
+
+  To install, just:
+  #+BEGIN_EXAMPLE
+    make && sudo make install
+  #+END_EXAMPLE
+
+  To specify a different install location use the =DESTDIR= environment
+  variable, like:
+  #+BEGIN_EXAMPLE
+    make install DESTDIR=/usr/local/clark
+  #+END_EXAMPLE
+
+  Otherwise it will install to ~/usr/local~ by default.

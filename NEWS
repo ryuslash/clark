@@ -1,0 +1,40 @@
+# -*- mode: org; -*-
+#+STARTUP: showall
+
+* v0.1.1
+
+  - Any errors that are caught will now exit with status code 1. This
+    makes it easier for other programs, like Conkeror, to determine
+    if an action was succesful. This does not yet happen if an
+    uncaught exception occurs.
+
+  - Errors are now printed to ~stderr~ more consistently.
+
+  - Fixed a bug that would cause an exception if the =XDG_DATA_HOME= or
+    =XDG_CONFIG_HOME= were not set.
+
+  - Removed the McCLIM dependency. It will be back, but is not used
+    at the moment, so it should not be required.
+
+  - Add ~NEWS~, ~CONTRIBUTING~, ~INSTALL~ and a ~js/README.org~.
+
+  - Fixed a bug that would cause an infinite loop with unrecognized
+    command-line options.
+
+* Changes since Markam
+
+  - Add command system. Instead of trying to figure out if we're
+    searching or adding a new URL from the arguments use =add= and
+    =search= commands.
+
+  - Add =edit=, =exists=, =remove= and =set-tags= commands.
+
+  - =help= will show a list of available commands and switches, and can
+    show a help message for each available command.
+
+** Conkeror interface
+
+   - Add commands for the =edit=, =exists=, =remove= and =set-tags= commands.
+
+   - Add indicator for the mode-line which shows whether or not the
+     current URL had been bookmarked in markam.
