@@ -330,6 +330,17 @@ list of tags."
   (clear-tags url)
   (add-tags url tags))
 
+(defun random-item (lst)
+  (nth (random (length lst) (make-random-state t)) lst))
+
+(defcommand random (&optional tag)
+  "Pick a random bookmark, possibly from TAG."
+  "Usage: clark random [<tag>]
+
+Get a random bookmark. If TAG is given limit the result to a bookmark
+having the tag TAG."
+  (format t "~a~%" (random-item (url-list tag))))
+
 (defcommand version ()
     "Show version."
     "Usage: clark version

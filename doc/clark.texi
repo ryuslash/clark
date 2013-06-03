@@ -118,6 +118,12 @@ as when no commands are given, but filtered by either of these
 conditions.
 @end deffn
 
+@deffn Command random [TAG]
+Look through the database for a random bookmark. If @var{tag} is
+specified, limit the results to bookmarks having the given tag. Simply
+prints the url of the selected bookmark.
+@end deffn
+
 @node Management, Miscellaneous, Querying, Usage
 @section Maintaining bookmarks in the database.
 

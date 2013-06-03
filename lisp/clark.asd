@@ -30,4 +30,5 @@
   :serial t
   :depends-on (:sqlite)
   :components ((:file "package")
-               (:file "clark")))
+               (:file "clark")
+               (:file "queries")))

@@ -264,6 +264,22 @@ function clark_set_tags(I) {
 interactive("clark-set-tags", "Replace the tags for the bookmark of"
             + " the current URL.", clark_set_tags);
 
+function clark_random(I)
+{
+    check_buffer(I.buffer, content_buffer);
+
+    let tag = yield I.minibuffer.read($prompt="tag: ");
+    let command = clark_program + ' random';
+    if (tag != "")
+        command += ' ' + tag;
+
+    let result = yield clark_shell_command(command);
+
+    if (result)
+        I.buffer.load(result);
+}
+interactive("clark-random", "Open a random bookmark", clark_random);
+
 function clark_shell_command(command)
 {
     let data = "", error = "";
@@ -278,11 +294,12 @@ function clark_shell_command(command)
                 )}]
     );
 
-    yield co_return(error == "");
+    yield co_return(error == "" && data);
 }
 
 define_keymap("clark_keymap");
 
+define_key(clark_keymap, "#", "clark-random");
 define_key(clark_keymap, "?", "clark-exists-p");
 define_key(clark_keymap, "a", "clark-add");
 define_key(clark_keymap, "A", "clark-add-link");
