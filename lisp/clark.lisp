@@ -87,9 +87,7 @@ the help command."
   "Remove all tags from the bookmark URL."
   (when url-or-id
     (if (integerp url-or-id)
-        (execute-non-query
-         *db* (sql delete from "bookmark_tag" where "bookmark_id" = ?)
-         url-or-id)
+        (delete-tags url-or-id)
         (clear-tags (get-bookmark-id url-or-id)))))
 
 (defun ensure-db-exists (name)
@@ -97,30 +95,9 @@ the help command."
   (let ((db-exists (probe-file name)))
     (setf *db* (connect name))
     (unless db-exists
-      (execute-non-query
-       *db* (sql create table "bookmark" ("url" varchar (255) unique\,
-                                          "date" integer\,
-                                          "name" varchar (255)\,
-                                          "description" text)))
-      (execute-non-query
-       *db* (sql create table "tag" ("name" varchar (255) unique)))
-      (execute-non-query
-       *db* (sql create table "bookmark_tag"
-                 ("bookmark_id" integer references "bookmark(rowid)"\,
-                  "tag_id" integer references "tag(rowid)"\,
-                  primary key ("bookmark_id"\,  "tag_id")))))))
-
-(defun get-bookmarks ()
-  "Get a list of all bookmarks.
-
-The result contains the url, name and the description of the bookmark."
-  (execute-to-list
-   *db* (sql select "url, name, description" from "bookmark")))
-
-(defun get-bookmark-id (url)
-  "Get the id of the bookmark for URL."
-  (execute-single
-   *db* (sql select "rowid" from "bookmark" where "url" = ?) url))
+      (create-table-bookmark)
+      (create-table-tag)
+      (create-table-bookmark_tag))))
 
 (defun get-db-location ()
   "Get the location of the database."
@@ -142,11 +119,6 @@ The result contains the url, name and the description of the bookmark."
             (unless xdg "/.config")
             '("/clark/rc.lisp")))))
 
-(defun get-tag-id (name)
-  "Get the rowid of tag NAME."
-  (execute-single
-   *db* (sql select "rowid" from "tag" where "name" = ?) name))
-
 (defun help-message ()
   (format t (concatenate
              'string
@@ -166,23 +138,6 @@ The result contains the url, name and the description of the bookmark."
   (format t "~%~A~%"
           (concatenate 'string "Use `clark help <command>' to get more "
                        "information on a command.")))
-
-(defun insert-bookmark (url name description)
-  "Insert URL, NAME and DESCRIPTION into the bookmark table."
-  (execute-non-query
-   *db* (sql insert into "bookmark" values (?\, ?\, ?\, ?))
-   url (get-universal-time) name description))
-
-(defun insert-bookmark-tag (bookmark-id tag-id)
-  "Insert BOOKMARK-ID and TAG-ID into the bookmark_tag table."
-  (execute-non-query
-   *db* (sql insert into "bookmark_tag" values (?\, ?))
-   bookmark-id tag-id))
-
-(defun insert-tag (name)
-  "Insert tag NAME into the database and return its rowid."
-  (execute-non-query *db* (sql insert into "tag" values (?)) name)
-  (last-insert-rowid *db*))
 
 (defun load-db ()
   "Load the database."
@@ -223,7 +178,7 @@ The executable name should already have been removed."
                     (signal err))))
             (with-error-and-help
                 1 "help" "Unknown command: ~A~%" (car args))))
-      (map nil #'print-bookmark (get-bookmarks))))
+      (map nil #'print-bookmark (bookmark-list))))
 
 (defun print-bookmark (bm)
   "Print information about bookmark BM.
@@ -274,10 +229,7 @@ option will replace the previous value for that part."
 
 Check if URL exists in the database. Prints `yes' when found and `no'
 otherwise."
-  (format
-   t "~:[no~;yes~]~%"
-   (execute-single
-    *db* (sql select "rowid" from "bookmark" where "url" = ?) url)))
+  (format t "~:[no~;yes~]~%" (bookmark-exists-p url)))
 
 (defcommand help (&optional command)
     "Show help message."
@@ -301,8 +253,7 @@ otherwise."
 
 Remove URL from the database."
   (clear-tags url)
-  (execute-non-query
-   *db* (sql delete from "bookmark" where "url" = ?) url))
+  (delete-bookmark url))
 
 (defcommand search (str)
     "Search through bookmarks."
@@ -310,16 +261,7 @@ Remove URL from the database."
 
 Search the database for STR. Matches are made for substrings of a
 bookmark's name or an exact match for a tag."
-  (map nil #'print-bookmark
-       (execute-to-list
-        *db* (sql select "url, name, description"
-                  from "bookmark"
-                  where "name" like ?
-                  or ? in (select "name"
-                           from "tag"
-                           join "bookmark_tag" on ("tag_id = tag.rowid")
-                           where "bookmark_id" = "bookmark.rowid"))
-        (format nil "%~A%" str) str)))
+  (map nil #'print-bookmark (bookmark-search str)))
 
 (defcommand set-tags (url &rest tags)
     "Set a bookmark's tags."
