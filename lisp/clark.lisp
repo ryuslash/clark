@@ -70,7 +70,7 @@ the help command."
          (*exit-status* ,code))
      ,@body))
 
-(defconstant version "0.1.1"
+(defparameter version "0.1.1"
   "Clark's version.")
 
 (defun add-tags (url-or-id tags)
