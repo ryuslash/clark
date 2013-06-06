@@ -41,10 +41,10 @@ define_browser_object_class(
     }
 );
 
+// Add URL to clark, ask for a title (provide TITLE as a
+// default), description and any number of tags.
 function clark_add_url(I, url, title)
-{   // Add URL to clark, ask for a title (provide TITLE as a
-    // default), description and any number of tags.
-    let url_string = load_spec_uri_string(load_spec(url));
+{   let url_string = load_spec_uri_string(load_spec(url));
     let title = yield I.minibuffer.read($prompt="name (required): ",
                                         $initial_value=title);
     let description = yield I.minibuffer.read(
@@ -58,7 +58,9 @@ function clark_add_url(I, url, title)
             + tags.split(',').map(function (str)
                                   { return str.trim(); }).join("' '")
             + "'";
-    yield clark_shell_command(command);
+    let result = yield clark_shell_command(command);
+
+    yield co_return(result);
 }
 
 function clark_add(I) {
@@ -66,7 +68,7 @@ function clark_add(I) {
     let result = yield clark_add_url(I, I.buffer.top_frame,
                                         I.buffer.title);
 
-    if (!result)
+    if (result === "")
         I.window.minibuffer.message('Added to clark');
     else
         I.window.minibuffer.message('Couldn\'t add to clark');
@@ -81,7 +83,7 @@ function clark_add_link(I) {
     let result = yield clark_add_url(I, encodeURIComponent(bo),
                                         bo.textContent);
 
-    if (!result)
+    if (result === "")
         I.window.minibuffer.message('Added to clark');
     else
         I.window.minibuffer.message('Couldn\'t add to clark');
@@ -188,7 +190,7 @@ function clark_edit(I) {
 
         var result = yield clark_shell_command(command);
 
-        if (result)
+        if (result === "")
             I.window.minibuffer.message("CLark done");
         else
             I.window.minibuffer.message("Error during CLark operation.");
@@ -234,7 +236,7 @@ function clark_remove(I) {
     let command = clark_program + ' remove "' + url_string + '"';
     let result = yield clark_shell_command(command);
 
-    if (result)
+    if (result === "")
         I.window.minibuffer.message("CLark done");
     else
         I.window.minibuffer.message("Error during CLark operation.");
@@ -256,7 +258,7 @@ function clark_set_tags(I) {
             ).join(" ");
     let result = yield clark_shell_command(command);
 
-    if (result)
+    if (result === "")
         I.window.minibuffer.message("CLark done");
     else
         I.window.minibuffer.message("Error during CLark operation.");
@@ -283,7 +285,7 @@ interactive("clark-random", "Open a random bookmark", clark_random);
 function clark_shell_command(command)
 {
     let data = "", error = "";
-    yield shell_command(
+    let res = yield shell_command(
         command,
         $fds = [{ output: async_binary_string_writer("") },
                 { input: async_binary_reader(
@@ -294,7 +296,7 @@ function clark_shell_command(command)
                 )}]
     );
 
-    yield co_return(error == "" && data);
+    yield co_return(res == 0 && error == "" && data);
 }
 
 define_keymap("clark_keymap");
