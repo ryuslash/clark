@@ -196,9 +196,11 @@ bookmark."
 
 Add URL with NAME, DESCRIPTION and TAGS to the database. TAGS may be
 omitted or any number of tag names."
-  (with-transaction *db*
-    (insert-bookmark url name description)
-    (add-tags (last-insert-rowid *db*) tags)))
+  (if (not (bookmark-exists-p url))
+      (with-transaction *db*
+        (insert-bookmark url name description)
+        (add-tags (last-insert-rowid *db*) tags))
+      (format t "~A has already been bookmarked~%" url)))
 
 (defcommand edit (url &rest rest)
     "Edit a bookmark."
