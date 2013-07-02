@@ -285,6 +285,14 @@ Get a random bookmark. If TAG is given limit the result to a bookmark
 having the tag TAG."
   (format t "~a~%" (random-item (url-list tag))))
 
+(defcommand remove-tags (url &rest tags)
+  "Remove given tags from bookmark's tag list."
+  "Usage: clark remove-tags <url> [<tags> ...]
+
+Remove the given TAGS from URL's tag list. If no tags are given,
+remove all tags from bookmark."
+  (delete-tags url tags))
+
 (defcommand version ()
     "Show version."
     "Usage: clark version

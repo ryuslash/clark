@@ -68,10 +68,22 @@
   (execute-non-query
    *db* (sql delete from "bookmark" where "url" = ?) url))
 
-(defun delete-tags (id)
+(defun delete-tags (id &optional tags)
   "Clear the tags for bookmark with id ID."
-  (execute-non-query *db* (sql delete from "bookmark_tag"
-                               where "bookmark_id" = ?) id))
+  (if tags
+      (map nil
+           (lambda (tag)
+             (execute-non-query
+              *db* (sql delete from "bookmark_tag"
+                        where "bookmark_id" = (select "rowid"
+                                                      from "bookmark"
+                                                      where "url" = ?)
+                        and "tag_id" in (select "rowid"
+                                                from "tag"
+                                                where "name" = ?))
+              id tag)) tags)
+      (execute-non-query *db* (sql delete from "bookmark_tag"
+                                   where "bookmark_id" = ?) id)))
 
 (defun get-bookmark-id (url)
   "Get the id of the bookmark for URL."

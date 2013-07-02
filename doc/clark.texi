@@ -158,6 +158,11 @@ Replace @var{url}'s tags with @var{tags}. @var{tags} may be omitted,
 in which case all the tags for @var{url} are removed.
 @end deffn
 
+@deffn Command remove-tags URL [TAGS...]
+Remove @var{tags} from @var{url}'s tag list. If @var{tags} is omitted,
+remove all tags from @var{url}'s tag list.
+@end deffn
+
 @node Miscellaneous,  , Management, Usage
 @section Other things that can be done
 

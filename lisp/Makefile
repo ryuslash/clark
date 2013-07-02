@@ -36,5 +36,5 @@ $(install-binaries): install-%: %
 $(uninstall-binaries): uninstall-%:
 	rm -f "$(DESTDIR)/bin/$*"
 
-clark: clark.lisp make-image.lisp
+clark: clark.lisp queries.lisp make-image.lisp
 	$(LISP) --load make-image.lisp
