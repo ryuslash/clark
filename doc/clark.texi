@@ -6,7 +6,7 @@
 @copying
 The user manual for CLark.
 
-Copyright @copyright{} 2013  Tom Willemsen
+Copyright @copyright{} 2013  Tom Willemse
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -29,7 +29,7 @@ The document was typeset with
 @titlepage
 @title CLark User Manual
 @subtitle The user manual for CLark
-@author Tom Willemsen
+@author Tom Willemse
 @page
 @vskip 0pt plus 1filll
 @insertcopying
@@ -43,6 +43,7 @@ The document was typeset with
 @c Output the table of the contents at the beginning.
 @contents
 
+
 @ifnottex
 @node Top, Usage, (dir), (dir)
 @top CLark User Manual
@@ -78,6 +79,7 @@ Copying This Manual
 @end detailmenu
 @end menu
 
+
 @c Update all node entries with `C-c C-u C-n'.
 @c Insert new nodes with `C-c C-c n'.
 @node Usage, Customization, Top, Top
@@ -91,6 +93,7 @@ For the moment CLark is a simple program, it has only a few functions.
 * Miscellaneous::               Other things that can be done.
 @end menu
 
+
 @node Querying, Management, Usage, Usage
 @section Getting bookmarks from the database.
 
@@ -124,6 +127,7 @@ specified, limit the results to bookmarks having the given tag. Simply
 prints the url of the selected bookmark.
 @end deffn
 
+
 @node Management, Miscellaneous, Querying, Usage
 @section Maintaining bookmarks in the database.
 
@@ -163,6 +167,7 @@ Remove @var{tags} from @var{url}'s tag list. If @var{tags} is omitted,
 remove all tags from @var{url}'s tag list.
 @end deffn
 
+
 @node Miscellaneous,  , Management, Usage
 @section Other things that can be done
 
@@ -193,6 +198,7 @@ The commands currently affected by this are @samp{search} and the
 default behavior when no commands are passed to CLark.
 @end deffn
 
+
 @node Customization, Interaction, Usage, Top
 @chapter Customizing CLark
 
@@ -240,6 +246,7 @@ Lisp function. It has access to the arguments as defined in @var{args}
 and anything any regular Lisp function does.
 @end deffn
 
+
 @node Interaction, Copying This Manual, Customization, Top
 @chapter Interacting with other programs
 
@@ -253,6 +260,7 @@ very fast.
 * Conkeror::                    Interacting with the Conkeror web browser
 @end menu
 
+
 @node Conkeror,  , Interaction, Interaction
 @section Interacting with the Conkeror web browser
 
@@ -297,6 +305,7 @@ What to show in the minibuffer when the current URL has not been
 bookmarked with CLark. Default is @samp{-}.
 @end defopt
 
+
 @node Copying This Manual, Index, Interaction, Top
 @appendix Copying This Manual
 
@@ -304,11 +313,13 @@ bookmarked with CLark. Default is @samp{-}.
 * GNU Free Documentation License::  License for copying this manual.
 @end menu
 
+
 @c Get fdl.texi from http://www.gnu.org/licenses/fdl.html
 @node GNU Free Documentation License,  , Copying This Manual, Copying This Manual
 @appendixsec GNU Free Documentation License
 @include fdl.texi
 
+
 @node Index,  , Copying This Manual, Top
 @unnumbered Index
 
