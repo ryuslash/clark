@@ -20,7 +20,7 @@ export DESTDIR ?= /usr/local
 export INSTALL_PROGRAM = $(INSTALL)
 export INSTALL_DATA = $(INSTALL) -m 644
 
-dirs = lisp doc js
+dirs = lisp doc
 install-dirs = $(addprefix install-,$(dirs))
 uninstall-dirs = $(addprefix uninstall-,$(dirs))
 install-strip-dirs = $(addprefix installstrip-,$(dirs))
